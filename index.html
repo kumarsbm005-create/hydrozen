@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HYDROZEN is a premium AI prompt-sharing platform for creators, artists, and prompt engineers.">
+  <title>HYDROZEN - AI Prompt Universe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=hydrozen-2">
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="page-loader" id="pageLoader" aria-hidden="true">
+    <div class="loader-orbit">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p>Initializing HYDROZEN</p>
+  </div>
+
+  <div class="ambient-scene" aria-hidden="true">
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+    <div class="glow glow-three"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <header class="navbar" id="navbar">
+    <a class="brand" href="#home" aria-label="HYDROZEN home">
+      <span class="brand-glyph">H</span>
+      <span>HYDROZEN</span>
+    </a>
+
+    <nav class="nav-menu" aria-label="Main navigation">
+      <a href="#explore">Explore</a>
+      <a href="#upload">Upload Prompt</a>
+    </nav>
+
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-shell">
+        <p class="eyebrow reveal">AI Prompt Exchange / Creator Operating System</p>
+        <h1 class="reveal">HYDROZEN Prompt Universe</h1>
+        <p class="hero-copy reveal">Search cinematic prompts, creator systems, Flux workflows, Grok ideas, and reusable AI intelligence.</p>
+
+        <form class="hero-search reveal" role="search" id="heroSearchForm">
+          <span aria-hidden="true">⌕</span>
+          <label class="sr-only" for="searchInput">Search prompts</label>
+          <input id="searchInput" type="search" placeholder="Search Midjourney, Flux, cinematic lighting, product shots...">
+          <button type="submit">Explore</button>
+        </form>
+
+        <div class="hero-metrics reveal" aria-label="Platform metrics">
+          <article>
+            <strong id="totalPrompts">0</strong>
+            <span>Prompts</span>
+          </article>
+          <article>
+            <strong>5</strong>
+            <span>Engines</span>
+          </article>
+          <article>
+            <strong id="savedCount">0</strong>
+            <span>Saved</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="filters-section" id="explore" aria-label="Prompt filters">
+      <div class="section-heading reveal">
+        <p class="eyebrow">Explore Library</p>
+      </div>
+
+      <div class="filter-rail reveal" role="tablist" aria-label="Prompt categories">
+        <button class="filter-pill active" type="button" data-category="All">All</button>
+        <button class="filter-pill" type="button" data-category="ChatGPT">ChatGPT</button>
+        <button class="filter-pill" type="button" data-category="Midjourney">Midjourney</button>
+        <button class="filter-pill" type="button" data-category="Stable Diffusion">Stable Diffusion</button>
+        <button class="filter-pill" type="button" data-category="Grok">Grok</button>
+        <button class="filter-pill" type="button" data-category="Flux">Flux</button>
+      </div>
+
+      <div class="library-frame reveal">
+        <div class="library-topline">
+          <span id="resultCount">Loading prompts</span>
+          <button class="micro-button" id="resetFilters" type="button">Reset View</button>
+        </div>
+        <div class="prompt-grid skeleton-grid" id="promptGrid" aria-live="polite">
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="upload-section" id="upload">
+      <div class="upload-shell reveal">
+        <div class="upload-copy">
+          <p class="eyebrow">Upload Prompt</p>
+          <h2>Publish a prompt into the HYDROZEN stream.</h2>
+          <p>Write a clean title, choose an engine, add tags, attach a preview image, and submit. Your prompt appears instantly in the library.</p>
+        </div>
+
+        <form class="upload-form" id="uploadForm">
+          <div class="field">
+            <label for="promptTitle">Prompt Title</label>
+            <input id="promptTitle" name="title" type="text" minlength="3" required placeholder="Neon monolith product campaign">
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="promptCategory">Engine</label>
+              <select id="promptCategory" name="category" required>
+                <option>ChatGPT</option>
+                <option>Midjourney</option>
+                <option>Stable Diffusion</option>
+                <option>Grok</option>
+                <option>Flux</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="promptTags">Tags</label>
+              <input id="promptTags" name="tags" type="text" placeholder="cinematic, luxury, neon">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="promptText">Full Prompt</label>
+            <textarea id="promptText" name="prompt" rows="6" minlength="20" required placeholder="Describe the full prompt with subject, style, lighting, lens, mood, and quality details..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="imageUpload">Image Preview</label>
+            <label class="upload-drop" for="imageUpload">
+              <input id="imageUpload" name="imageUpload" type="file" accept="image/*">
+              <span id="uploadDropText">Drop or select a cinematic preview image</span>
+              <img id="imagePreview" alt="">
+            </label>
+          </div>
+
+          <button class="submit-button" type="submit">
+            <span>Submit Prompt</span>
+            <i aria-hidden="true"></i>
+          </button>
+          <p class="form-status" id="formStatus" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="prompt-modal" id="promptModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <article class="modal-card">
+      <button class="modal-close" type="button" aria-label="Close prompt" data-close-modal>×</button>
+      <div class="modal-image">
+        <img id="modalImage" alt="">
+      </div>
+      <div class="modal-content">
+        <div class="modal-kicker">
+          <span id="modalCategory"></span>
+          <span id="modalLikes"></span>
+        </div>
+        <h2 id="modalTitle"></h2>
+        <p id="modalCreator"></p>
+        <div class="modal-tags" id="modalTags"></div>
+        <pre id="modalPrompt"></pre>
+        <div class="modal-actions">
+          <button type="button" id="modalCopy">Copy</button>
+          <button type="button" id="modalShare">Share</button>
+          <button type="button" id="modalDownload">Download</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-divider"></div>
+    <div class="footer-content">
+      <a class="brand" href="#home" aria-label="HYDROZEN home">
+        <span class="brand-glyph">H</span>
+        <span>HYDROZEN</span>
+      </a>
+      <p>Copyright © <span id="year"></span> HYDROZEN. All rights reserved.</p>
+      <div class="socials" aria-label="Social links">
+        <a href="#" aria-label="X">X</a>
+        <a href="#" aria-label="Instagram">IG</a>
+        <a href="#" aria-label="Discord">DC</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js?v=hydrozen-2"></script>
+</body>
+</html>
