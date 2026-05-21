@@ -475,6 +475,19 @@ elements.navToggle.addEventListener("click", () => {
   elements.navToggle.setAttribute("aria-expanded", String(isOpen));
 });
 
+elements.navMenu.addEventListener("click", event => {
+  if (!event.target.closest("a")) return;
+  elements.navMenu.classList.remove("is-open");
+  elements.navToggle.setAttribute("aria-expanded", "false");
+});
+
+window.addEventListener("resize", () => {
+  if (window.innerWidth > 768) {
+    elements.navMenu.classList.remove("is-open");
+    elements.navToggle.setAttribute("aria-expanded", "false");
+  }
+});
+
 elements.search.addEventListener("input", event => {
   state.query = event.target.value.trim();
   renderPrompts();
