@@ -210,7 +210,12 @@
   <!-- FIX: Correct Supabase CDN URL (was malformed local cached path) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <!-- FIX: env.js served by server.js at /env.js (was file:///C:/env.js absolute local path) -->
-  <script src="/env.js"></script>
+  <script>
+  window.HYDROZEN_ENV = {
+    SUPABASE_URL: "https://gtzkpzdnpawygcxmotrj.supabase.co",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0emtwemRucGF3eWdjeG1vdHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NDkyNDcsImV4cCI6MjA5NTAyNTI0N30.gBTsMt1-cITEF3MkwYC3gWkDeK-DqNjkywHRbcZLIeI"
+  };
+</script>
   <script src="./script.js"></script>
 </body>
 </html>
