@@ -22,6 +22,14 @@ const MIME_TYPES = {
   ".woff2": "font/woff2"
 };
 
+function publicEnvScript() {
+  const env = {
+    SUPABASE_URL: process.env.SUPABASE_URL || "",
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || ""
+  };
+  return `window.HYDROZEN_ENV = ${JSON.stringify(env)};`;
+}
+
 function readPrompts() {
   try {
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
@@ -186,6 +194,16 @@ function serveStatic(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname === "/env.js") {
+    const body = publicEnvScript();
+    res.writeHead(200, {
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Content-Length": Buffer.byteLength(body)
+    });
+    res.end(body);
+    return;
+  }
   if (url.pathname.startsWith("/api/") && handleApi(req, res, url)) return;
   serveStatic(req, res, url);
 });
