@@ -5,8 +5,21 @@ const crypto = require("crypto");
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
-const PUBLIC_DIR = path.join(ROOT, "public");
+
+// FIX: Removed incorrect /public subdirectory — files live directly in ROOT
+// (original had PUBLIC_DIR = path.join(ROOT, "public") which caused 404 for all static files)
+const PUBLIC_DIR = ROOT;
+
 const DATA_FILE = path.join(ROOT, "data", "prompts.json");
+
+// FIX: Ensure data/ directory exists so readPrompts/writePrompts don't crash on first run
+const DATA_DIR = path.join(ROOT, "data");
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+if (!fs.existsSync(DATA_FILE)) {
+  fs.writeFileSync(DATA_FILE, "[]\n");
+}
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -16,6 +29,7 @@ const MIME_TYPES = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
   ".woff": "font/woff",
@@ -64,10 +78,7 @@ function parseBody(req) {
       }
     });
     req.on("end", () => {
-      if (!body) {
-        resolve({});
-        return;
-      }
+      if (!body) { resolve({}); return; }
       try {
         resolve(JSON.parse(body));
       } catch (error) {
@@ -89,10 +100,7 @@ function normalizePrompt(input) {
 
   const tags = Array.isArray(input.tags)
     ? input.tags
-    : String(input.tags || "")
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(Boolean);
+    : String(input.tags || "").split(",").map(tag => tag.trim()).filter(Boolean);
 
   return {
     id: `ipx-${crypto.randomUUID()}`,
@@ -110,7 +118,7 @@ function normalizePrompt(input) {
 
 function handleApi(req, res, url) {
   if (url.pathname === "/api/health") {
-    sendJson(res, 200, { ok: true, service: "image-prompt-universe", time: new Date().toISOString() });
+    sendJson(res, 200, { ok: true, service: "hydrozen-prompt-universe", time: new Date().toISOString() });
     return true;
   }
 
@@ -143,10 +151,7 @@ function handleApi(req, res, url) {
     parseBody(req)
       .then(input => {
         const nextPrompt = normalizePrompt(input);
-        if (nextPrompt.error) {
-          sendJson(res, 400, { error: nextPrompt.error });
-          return;
-        }
+        if (nextPrompt.error) { sendJson(res, 400, { error: nextPrompt.error }); return; }
         const prompts = readPrompts();
         prompts.unshift(nextPrompt);
         writePrompts(prompts);
@@ -171,12 +176,9 @@ function serveStatic(req, res, url) {
 
   fs.stat(filePath, (error, stat) => {
     if (error || !stat.isFile()) {
+      // SPA fallback: serve index.html for unknown routes
       fs.readFile(path.join(PUBLIC_DIR, "index.html"), (fallbackError, fallback) => {
-        if (fallbackError) {
-          res.writeHead(404);
-          res.end("Not found");
-          return;
-        }
+        if (fallbackError) { res.writeHead(404); res.end("Not found"); return; }
         res.writeHead(200, { "Content-Type": MIME_TYPES[".html"] });
         res.end(fallback);
       });
@@ -194,6 +196,7 @@ function serveStatic(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
   if (url.pathname === "/env.js") {
     const body = publicEnvScript();
     res.writeHead(200, {
@@ -204,10 +207,11 @@ const server = http.createServer((req, res) => {
     res.end(body);
     return;
   }
+
   if (url.pathname.startsWith("/api/") && handleApi(req, res, url)) return;
   serveStatic(req, res, url);
 });
 
 server.listen(PORT, () => {
-  console.log(`Image Prompt Universe running at http://localhost:${PORT}`);
+  console.log(`HYDROZEN running at http://localhost:${PORT}`);
 });
