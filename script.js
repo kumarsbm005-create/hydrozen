@@ -272,10 +272,13 @@ async function loadPrompts(reset = false) {
   const to = from + PAGE_SIZE - 1;
 
   const { data, error } = await HYDROZEN.supabase
-    .from("prompts_with_counts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  .from("prompts_with_counts")
+  .select("*")
+  .order("created_at", { ascending: false })
+  .range(from, to);
+
+console.log(data);
+console.log(error);
 
   if (error) {
     console.error(error);
