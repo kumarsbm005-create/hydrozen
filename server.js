@@ -1,24 +1,77 @@
-const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
+const DATA_FILE = path.join("/tmp", "prompts.json");
 
-// FIX: Removed incorrect /public subdirectory — files live directly in ROOT
-// (original had PUBLIC_DIR = path.join(ROOT, "public") which caused 404 for all static files)
-const PUBLIC_DIR = ROOT;
-
-const DATA_FILE = path.join(ROOT, "data", "prompts.json");
-
-// FIX: Ensure data/ directory exists so readPrompts/writePrompts don't crash on first run
-const DATA_DIR = path.join(ROOT, "data");
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Vercel is read-only except /tmp — use /tmp for data storage
+function readPrompts() {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return [];
+    return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  } catch {
+    return [];
+  }
 }
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, "[]\n");
+
+function writePrompts(prompts) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(prompts, null, 2));
+}
+
+function publicEnvScript() {
+  const env = {
+    SUPABASE_URL: process.env.SUPABASE_URL || "",
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || ""
+  };
+  return `window.HYDROZEN_ENV = ${JSON.stringify(env)};`;
+}
+
+function sendJson(res, status, payload) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(payload));
+}
+
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk;
+      if (body.length > 1_000_000) { reject(new Error("Payload too large")); req.destroy(); }
+    });
+    req.on("end", () => {
+      if (!body) { resolve({}); return; }
+      try { resolve(JSON.parse(body)); }
+      catch { reject(new Error("Invalid JSON")); }
+    });
+    req.on("error", reject);
+  });
+}
+
+function normalizePrompt(input) {
+  const title = String(input.title || "").trim();
+  const prompt = String(input.prompt || "").trim();
+  const category = String(input.category || "Unsorted").trim();
+
+  if (title.length < 3) return { error: "Title must be at least 3 characters." };
+  if (prompt.length < 20) return { error: "Prompt must be at least 20 characters." };
+
+  const tags = Array.isArray(input.tags)
+    ? input.tags
+    : String(input.tags || "").split(",").map(t => t.trim()).filter(Boolean);
+
+  return {
+    id: `ipx-${crypto.randomUUID()}`,
+    title,
+    category,
+    image: String(input.image || "/assets/img/18.jpg").trim(),
+    prompt,
+    tags,
+    rating: Math.max(0, Math.min(5, Number(input.rating || 4.5))),
+    createdAt: new Date().toISOString()
+  };
 }
 
 const MIME_TYPES = {
@@ -36,182 +89,98 @@ const MIME_TYPES = {
   ".woff2": "font/woff2"
 };
 
-function publicEnvScript() {
-  const env = {
-    SUPABASE_URL: process.env.SUPABASE_URL || "",
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || ""
-  };
-  return `window.HYDROZEN_ENV = ${JSON.stringify(env)};`;
-}
-
-function readPrompts() {
+function serveFile(res, filePath) {
   try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-  } catch (error) {
-    console.error("Failed to read prompts:", error);
-    return [];
-  }
-}
-
-function writePrompts(prompts) {
-  fs.writeFileSync(DATA_FILE, `${JSON.stringify(prompts, null, 2)}\n`);
-}
-
-function sendJson(res, status, payload) {
-  const body = JSON.stringify(payload);
-  res.writeHead(status, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store",
-    "Content-Length": Buffer.byteLength(body)
-  });
-  res.end(body);
-}
-
-function parseBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = "";
-    req.on("data", chunk => {
-      body += chunk;
-      if (body.length > 1_000_000) {
-        reject(new Error("Payload too large"));
-        req.destroy();
-      }
-    });
-    req.on("end", () => {
-      if (!body) { resolve({}); return; }
-      try {
-        resolve(JSON.parse(body));
-      } catch (error) {
-        reject(new Error("Invalid JSON"));
-      }
-    });
-    req.on("error", reject);
-  });
-}
-
-function normalizePrompt(input) {
-  const title = String(input.title || "").trim();
-  const prompt = String(input.prompt || "").trim();
-  const category = String(input.category || "Unsorted").trim();
-  const model = String(input.model || "Custom").trim();
-
-  if (title.length < 3) return { error: "Title must be at least 3 characters." };
-  if (prompt.length < 20) return { error: "Prompt must be at least 20 characters." };
-
-  const tags = Array.isArray(input.tags)
-    ? input.tags
-    : String(input.tags || "").split(",").map(tag => tag.trim()).filter(Boolean);
-
-  return {
-    id: `ipx-${crypto.randomUUID()}`,
-    title,
-    category,
-    model,
-    image: String(input.image || "/assets/img/18.jpg").trim(),
-    prompt,
-    negative: String(input.negative || "").trim(),
-    tags,
-    rating: Math.max(0, Math.min(5, Number(input.rating || 4.5))),
-    createdAt: new Date().toISOString()
-  };
-}
-
-function handleApi(req, res, url) {
-  if (url.pathname === "/api/health") {
-    sendJson(res, 200, { ok: true, service: "hydrozen-prompt-universe", time: new Date().toISOString() });
-    return true;
-  }
-
-  if (url.pathname === "/api/stats") {
-    const prompts = readPrompts();
-    const categories = [...new Set(prompts.map(item => item.category))];
-    const models = [...new Set(prompts.map(item => item.model))];
-    sendJson(res, 200, { total: prompts.length, categories, models });
-    return true;
-  }
-
-  if (url.pathname === "/api/prompts" && req.method === "GET") {
-    const query = String(url.searchParams.get("q") || "").toLowerCase();
-    const category = String(url.searchParams.get("category") || "all").toLowerCase();
-    const model = String(url.searchParams.get("model") || "all").toLowerCase();
-
-    const prompts = readPrompts().filter(item => {
-      const haystack = `${item.title} ${item.category} ${item.model} ${item.prompt} ${(item.tags || []).join(" ")}`.toLowerCase();
-      const matchesQuery = !query || haystack.includes(query);
-      const matchesCategory = category === "all" || item.category.toLowerCase() === category;
-      const matchesModel = model === "all" || item.model.toLowerCase() === model;
-      return matchesQuery && matchesCategory && matchesModel;
-    });
-
-    sendJson(res, 200, { prompts });
-    return true;
-  }
-
-  if (url.pathname === "/api/prompts" && req.method === "POST") {
-    parseBody(req)
-      .then(input => {
-        const nextPrompt = normalizePrompt(input);
-        if (nextPrompt.error) { sendJson(res, 400, { error: nextPrompt.error }); return; }
-        const prompts = readPrompts();
-        prompts.unshift(nextPrompt);
-        writePrompts(prompts);
-        sendJson(res, 201, { prompt: nextPrompt });
-      })
-      .catch(error => sendJson(res, 400, { error: error.message }));
-    return true;
-  }
-
-  return false;
-}
-
-function serveStatic(req, res, url) {
-  const requestedPath = url.pathname === "/" ? "/index.html" : decodeURIComponent(url.pathname);
-  const filePath = path.normalize(path.join(PUBLIC_DIR, requestedPath));
-
-  if (!filePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403);
-    res.end("Forbidden");
-    return;
-  }
-
-  fs.stat(filePath, (error, stat) => {
-    if (error || !stat.isFile()) {
-      // SPA fallback: serve index.html for unknown routes
-      fs.readFile(path.join(PUBLIC_DIR, "index.html"), (fallbackError, fallback) => {
-        if (fallbackError) { res.writeHead(404); res.end("Not found"); return; }
-        res.writeHead(200, { "Content-Type": MIME_TYPES[".html"] });
-        res.end(fallback);
-      });
-      return;
-    }
-
+    const content = fs.readFileSync(filePath);
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, {
-      "Content-Type": MIME_TYPES[ext] || "application/octet-stream",
-      "Cache-Control": "no-store"
-    });
-    fs.createReadStream(filePath).pipe(res);
-  });
+    res.statusCode = 200;
+    res.setHeader("Content-Type", MIME_TYPES[ext] || "application/octet-stream");
+    res.setHeader("Cache-Control", "no-store");
+    res.end(content);
+  } catch {
+    try {
+      const index = fs.readFileSync(path.join(ROOT, "index.html"));
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.end(index);
+    } catch {
+      res.statusCode = 404;
+      res.end("Not found");
+    }
+  }
 }
 
-const server = http.createServer((req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+// ─── Main Vercel Handler ───────────────────────────────────────────────────────
+module.exports = async (req, res) => {
+  const url = new URL(req.url, `https://${req.headers.host}`);
+  const pathname = url.pathname;
 
-  if (url.pathname === "/env.js") {
+  // CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") { res.statusCode = 204; res.end(); return; }
+
+  // /env.js — inject Supabase env vars to frontend
+  if (pathname === "/env.js") {
     const body = publicEnvScript();
-    res.writeHead(200, {
-      "Content-Type": "application/javascript; charset=utf-8",
-      "Cache-Control": "no-store",
-      "Content-Length": Buffer.byteLength(body)
-    });
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
     res.end(body);
     return;
   }
 
-  if (url.pathname.startsWith("/api/") && handleApi(req, res, url)) return;
-  serveStatic(req, res, url);
-});
+  // API routes
+  if (pathname === "/api/health") {
+    sendJson(res, 200, { ok: true, service: "hydrozen", time: new Date().toISOString() });
+    return;
+  }
 
-server.listen(PORT, () => {
-  console.log(`HYDROZEN running at http://localhost:${PORT}`);
-});
+  if (pathname === "/api/stats") {
+    const prompts = readPrompts();
+    const categories = [...new Set(prompts.map(p => p.category))];
+    sendJson(res, 200, { total: prompts.length, categories });
+    return;
+  }
+
+  if (pathname === "/api/prompts" && req.method === "GET") {
+    const query = String(url.searchParams.get("q") || "").toLowerCase();
+    const category = String(url.searchParams.get("category") || "all").toLowerCase();
+    const prompts = readPrompts().filter(item => {
+      const haystack = `${item.title} ${item.category} ${item.prompt} ${(item.tags || []).join(" ")}`.toLowerCase();
+      const matchesQuery = !query || haystack.includes(query);
+      const matchesCategory = category === "all" || item.category.toLowerCase() === category;
+      return matchesQuery && matchesCategory;
+    });
+    sendJson(res, 200, { prompts });
+    return;
+  }
+
+  if (pathname === "/api/prompts" && req.method === "POST") {
+    try {
+      const input = await parseBody(req);
+      const next = normalizePrompt(input);
+      if (next.error) { sendJson(res, 400, { error: next.error }); return; }
+      const prompts = readPrompts();
+      prompts.unshift(next);
+      writePrompts(prompts);
+      sendJson(res, 201, { prompt: next });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
+  // Static file serving
+  const safePath = pathname === "/" ? "/index.html" : decodeURIComponent(pathname);
+  const filePath = path.normalize(path.join(ROOT, safePath));
+
+  if (!filePath.startsWith(ROOT)) {
+    res.statusCode = 403;
+    res.end("Forbidden");
+    return;
+  }
+
+  serveFile(res, filePath);
+};
