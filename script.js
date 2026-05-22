@@ -249,63 +249,60 @@ async function logout() {
 }
 
 // ─── Prompts ───────────────────────────────────────────────────────────────────
-async function loadPrompts() {
-  renderSkeleton();
+async function loadPrompts(reset = false) {
+
+  if (loadingMore) return;
+
+  loadingMore = true;
+
+  if (reset) {
+    currentPage = 0;
+    HYDROZEN.prompts = [];
+    ui.grid.innerHTML = "";
+  }
 
   if (!HYDROZEN.supabase) {
-    HYDROZEN.prompts = demoPrompts.map(p => ({
-      ...p,
-      saved: HYDROZEN.localSaved.has(p.id),
-      liked: HYDROZEN.localLiked.has(p.id)
-    }));
+    HYDROZEN.prompts = demoPrompts;
     renderPrompts();
+    loadingMore = false;
     return;
   }
 
-  try {
-    const userId = HYDROZEN.session?.user?.id || null;
-    const { data, error } = await HYDROZEN.supabase
-      .from("prompts_with_counts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(60);
+  const from = currentPage * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
 
-    if (error) throw error;
+  const { data, error } = await HYDROZEN.supabase
+    .from("prompts_with_counts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-    let likedIds = new Set();
-    let savedIds = new Set();
-
-    if (userId) {
-      const [{ data: likes }, { data: bookmarks }] = await Promise.all([
-        HYDROZEN.supabase.from("prompt_likes").select("prompt_id").eq("user_id", userId),
-        HYDROZEN.supabase.from("prompt_bookmarks").select("prompt_id").eq("user_id", userId)
-      ]);
-      likedIds = new Set((likes || []).map(item => item.prompt_id));
-      savedIds = new Set((bookmarks || []).map(item => item.prompt_id));
-    }
-
-    HYDROZEN.prompts = (data || []).map(row => ({
-      id: row.id,
-      title: row.title,
-      category: row.category,
-      creator: row.creator_name || "Hydrozen Creator",
-      image: row.image_url || "/assets/img/18.jpg",
-      prompt: row.prompt,
-      tags: row.tags || [],
-      likes: row.like_count || 0,
-      liked: likedIds.has(row.id),
-      saved: savedIds.has(row.id),
-      trending: (row.like_count || 0) >= 10
-    }));
-
-    if (!HYDROZEN.prompts.length) HYDROZEN.prompts = [...demoPrompts];
-    renderPrompts();
-  } catch (error) {
+  if (error) {
     console.error(error);
-    setStatus("Fallback", "Supabase read failed");
-    HYDROZEN.prompts = [...demoPrompts];
-    renderPrompts();
+    loadingMore = false;
+    return;
   }
+
+  const newPrompts = (data || []).map(row => ({
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    creator: row.creator_name || "Hydrozen Creator",
+    image: row.image_url || "/assets/img/1.webp",
+    prompt: row.prompt,
+    tags: row.tags || [],
+    likes: row.like_count || 0,
+    liked: false,
+    saved: false,
+    trending: (row.like_count || 0) >= 10
+  }));
+
+  HYDROZEN.prompts.push(...newPrompts);
+
+  renderPrompts(newPrompts);
+
+  currentPage++;
+  loadingMore = false;
 }
 
 function renderSkeleton() {
@@ -322,50 +319,49 @@ function filteredPrompts() {
   });
 }
 
-function renderPrompts() {
-  const prompts = filteredPrompts();
-  ui.grid.classList.remove("skeleton-grid");
-  ui.grid.innerHTML = "";
+function renderPrompts(promptsToRender = HYDROZEN.prompts) {
+
   ui.totalPrompts.textContent = HYDROZEN.prompts.length;
-  ui.savedCount.textContent = HYDROZEN.prompts.filter(p => p.saved).length + HYDROZEN.localSaved.size;
-  ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
 
-  if (!prompts.length) {
-    ui.grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
-    return;
-  }
+  const html = promptsToRender.map(prompt => `
 
-  prompts.forEach(prompt => {
-    const card = document.createElement("article");
-    card.className = "prompt-card";
-    card.tabIndex = 0;
-    card.innerHTML = `
+    <article class="prompt-card">
+
       <div class="card-media">
-        <picture>
-          <source srcset="${escapeHtml(toWebpHint(prompt.image))}" type="image/webp">
-          <img src="${escapeHtml(prompt.image)}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
-        </picture>
-        ${prompt.trending ? '<span class="trending-badge">Trending</span>' : ""}
-        <button class="save-button ${prompt.saved ? "is-saved" : ""}" type="button" data-save="${prompt.id}">${prompt.saved ? "Saved" : "Save"}</button>
+
+        <img
+          src="${escapeHtml(prompt.image)}"
+          alt="${escapeHtml(prompt.title)}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+        >
+
       </div>
+
       <div class="card-body">
+
         <div class="card-meta">
           <span class="engine-chip">${escapeHtml(prompt.category)}</span>
-          <button class="likes ${prompt.liked ? "is-liked" : ""}" type="button" data-like="${prompt.id}">${formatLikes(prompt.likes)} likes</button>
         </div>
+
         <h3>${escapeHtml(prompt.title)}</h3>
-        <p class="creator">by ${escapeHtml(prompt.creator)}</p>
-        <p class="prompt-preview">${escapeHtml(prompt.prompt)}</p>
-        <div class="tag-list">${prompt.tags.slice(0, 4).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
-        <div class="card-actions">
-          <button class="card-action" type="button" data-open="${prompt.id}">View Prompt</button>
-          <button class="card-action" type="button" data-copy="${prompt.id}">Copy</button>
-        </div>
+
+        <p class="creator">
+          by ${escapeHtml(prompt.creator)}
+        </p>
+
+        <p class="prompt-preview">
+          ${escapeHtml(prompt.prompt.slice(0, 140))}...
+        </p>
+
       </div>
-    `;
-    card.addEventListener("keydown", e => { if (e.key === "Enter") openModal(prompt.id); });
-    ui.grid.append(card);
-  });
+
+    </article>
+
+  `).join("");
+
+  ui.grid.insertAdjacentHTML("beforeend", html);
 }
 
 // ─── Image Upload ──────────────────────────────────────────────────────────────
@@ -695,6 +691,26 @@ function bindEvents() {
   $("#year").textContent = new Date().getFullYear();
 }
 
+function initInfiniteScroll() {
+
+  const trigger = document.createElement("div");
+
+  trigger.id = "scroll-trigger";
+
+  ui.grid.after(trigger);
+
+  const observer = new IntersectionObserver(entries => {
+
+    if (entries[0].isIntersecting) {
+      loadPrompts();
+    }
+
+  }, {
+    rootMargin: "1000px"
+  });
+
+  observer.observe(trigger);
+}
 // ─── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
   bindEvents();
@@ -705,6 +721,7 @@ async function boot() {
   initSupabase();
   await initAuth();
   subscribeRealtime();
+  initInfiniteScroll();
   await loadPrompts();
 }
 
