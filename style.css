@@ -1,28 +1,43 @@
 :root {
-  --bg: #050505;
-  --card: rgba(255,255,255,0.03);
-  --border: rgba(255,255,255,0.08);
-  --text: #f5f5f5;
-  --muted: rgba(255,255,255,0.6);
-  --radius: 24px;
+  --bg: #08090b;
+  --bg-2: #0d0f13;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-2: rgba(255, 255, 255, 0.085);
+  --surface-solid: #12141a;
+  --text: #f7f7f2;
+  --muted: #a7adba;
+  --soft: #737b8c;
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --accent: #ece6d4;
+  --accent-2: #9fd8d1;
+  --accent-3: #d76f8d;
+  --danger: #ff6f8d;
+  --shadow: 0 28px 110px rgba(0, 0, 0, 0.52);
+  --radius: 18px;
+  --radius-lg: 28px;
+  --font-display: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-body: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--bg);
+  min-height: 100vh;
+  margin: 0;
   color: var(--text);
-  font-family: Inter, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(circle at 50% -15%, rgba(236, 230, 212, 0.13), transparent 32%),
+    radial-gradient(circle at 85% 16%, rgba(159, 216, 209, 0.1), transparent 28%),
+    linear-gradient(180deg, #06070a 0%, var(--bg) 42%, #050608 100%);
+  font-family: var(--font-body);
   overflow-x: hidden;
 }
 
@@ -247,7 +262,7 @@ img {
   border-radius: 50%;
   color: #111;
   background: linear-gradient(135deg, #fffdf3, var(--accent) 55%, var(--accent-2));
-  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+  box-shadow: 0 0 30px rgba(236, 230, 212, 0.16);
 }
 
 .nav-menu {
@@ -623,53 +638,67 @@ h2 {
 
 .prompt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.prompt-card,
+.skeleton-card,
+.empty-state {
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .prompt-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--card);
-  border: 1px solid var(--border);
+  min-height: 540px;
+  isolation: isolate;
+  transition: transform 280ms ease, border-color 280ms ease, box-shadow 280ms ease;
+}
 
-  transition:
-    transform .25s ease,
-    border-color .25s ease,
-    background .25s ease;
-
-  will-change: transform;
-  contain: layout paint;
-
-  transform: translateZ(0);
-  backface-visibility: hidden;
+.prompt-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  opacity: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 20%), rgba(236, 230, 212, 0.15), transparent 32%);
+  transition: opacity 220ms ease;
 }
 
 .prompt-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-7px);
+  border-color: rgba(236, 230, 212, 0.3);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.52);
+}
+
+.prompt-card:hover::before {
+  opacity: 1;
 }
 
 .card-media {
   position: relative;
+  height: 230px;
   overflow: hidden;
+  background: #101116;
 }
 
 .card-media img {
   width: 100%;
-  aspect-ratio: 4/5;
+  height: 100%;
   object-fit: cover;
-  display: block;
-
-  transform: translateZ(0);
-
-  transition: transform .5s ease;
+  transform: scale(1.02);
+  transition: transform 460ms ease, filter 460ms ease;
 }
 
-.prompt-card:hover img {
-  transform: scale(1.03);
+.prompt-card:hover .card-media img {
+  transform: scale(1.075);
+  filter: saturate(1.1) contrast(1.04);
 }
+
 .trending-badge {
   position: absolute;
   top: 14px;
@@ -681,7 +710,7 @@ h2 {
   background: rgba(0, 0, 0, 0.5);
   font-size: 11px;
   font-weight: 900;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
 }
 
 .save-button {
@@ -812,30 +841,14 @@ h2 {
 }
 
 .skeleton-card {
-  height: 420px;
-  border-radius: 24px;
-  overflow: hidden;
-
-  background: linear-gradient(
-    90deg,
-    rgba(255,255,255,0.03),
-    rgba(255,255,255,0.06),
-    rgba(255,255,255,0.03)
-  );
-
-  background-size: 200% 100%;
-
+  min-height: 540px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.075), transparent),
+    rgba(255, 255, 255, 0.04);
+  background-size: 220% 100%;
   animation: shimmer 1.3s linear infinite;
 }
 
-@keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-  to {
-    background-position: -200% 0;
-  }
-}
 .empty-state {
   grid-column: 1 / -1;
   display: grid;
@@ -1684,25 +1697,14 @@ h2 {
     padding-bottom: 1.8rem;
   }
 }
-@media (max-width: 768px) {
 
-  .cursor-glow,
-  .glow,
-  #particleCanvas {
-    display: none !important;
-  }
-
-  .prompt-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .hero h1 {
-    font-size: 3rem;
-  }
-
-  * {
-    animation-duration: .01ms !important;
-    transition-duration: .15s !important;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
