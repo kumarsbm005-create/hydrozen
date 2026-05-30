@@ -1,4 +1,3 @@
-// ─── Demo Data ────────────────────────────────────────────────────────────────
 const demoPrompts = [
   {
     id: "demo-midnight-product",
@@ -80,7 +79,6 @@ const demoPrompts = [
   }
 ];
 
-// ─── App State ─────────────────────────────────────────────────────────────────
 const HYDROZEN = {
   supabase: null,
   session: null,
@@ -88,7 +86,6 @@ const HYDROZEN = {
   category: "All",
   query: "",
   realtimeChannel: null,
-  activePrompt: null,
   localSaved: new Set(JSON.parse(localStorage.getItem("hydrozen:saved") || "[]")),
   localLiked: new Set(JSON.parse(localStorage.getItem("hydrozen:liked") || "[]"))
 };
@@ -118,80 +115,9 @@ const ui = {
   imageUpload: $("#imageUpload"),
   imagePreview: $("#imagePreview"),
   uploadDrop: $(".upload-drop"),
-  uploadDropText: $("#uploadDropText"),
-  cursorGlow: $(".cursor-glow")
+  uploadDropText: $("#uploadDropText")
 };
 
-// ─── FIX: Cursor Glow Tracking (element existed in HTML but was never wired up) ─
-function initCursorGlow() {
-  const glow = ui.cursorGlow;
-  if (!glow || window.matchMedia("(max-width: 768px)").matches) return;
-  let visible = false;
-  document.addEventListener("mousemove", e => {
-    if (!visible) {
-      glow.style.opacity = "1";
-      visible = true;
-    }
-    glow.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
-  }, { passive: true });
-  document.addEventListener("mouseleave", () => {
-    glow.style.opacity = "0";
-    visible = false;
-  });
-}
-
-// ─── FIX: Particle Canvas (canvas existed in HTML but was never drawn) ──────────
-function initParticleCanvas() {
-  const canvas = $("#particleCanvas");
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  let w, h, particles = [];
-
-  function resize() {
-    w = canvas.width = canvas.offsetWidth;
-    h = canvas.height = canvas.offsetHeight;
-  }
-
-  function Particle() {
-    this.x = Math.random() * w;
-    this.y = Math.random() * h;
-    this.r = Math.random() * 1.4 + 0.4;
-    this.vx = (Math.random() - 0.5) * 0.3;
-    this.vy = (Math.random() - 0.5) * 0.3;
-    this.alpha = Math.random() * 0.5 + 0.15;
-    this.color = Math.random() > 0.5
-      ? `rgba(236,230,212,${this.alpha})`
-      : `rgba(159,216,209,${this.alpha})`;
-  }
-
-  function spawnParticles(count = 90) {
-    particles = Array.from({ length: count }, () => new Particle());
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, w, h);
-    particles.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0) p.x = w;
-      if (p.x > w) p.x = 0;
-      if (p.y < 0) p.y = h;
-      if (p.y > h) p.y = 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  spawnParticles();
-  draw();
-  window.addEventListener("resize", () => { resize(); spawnParticles(); }, { passive: true });
-}
-
-// ─── Supabase ──────────────────────────────────────────────────────────────────
 function getSupabaseConfig() {
   const env = window.HYDROZEN_ENV || {};
   return {
@@ -206,19 +132,30 @@ function initSupabase() {
     setStatus("Demo mode", "Supabase env missing");
     return;
   }
+
   HYDROZEN.supabase = window.supabase.createClient(config.url, config.anonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    realtime: { params: { eventsPerSecond: 8 } }
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    },
+    realtime: {
+      params: { eventsPerSecond: 8 }
+    }
   });
   setStatus("Supabase", "Connected");
 }
 
-// ─── Auth ──────────────────────────────────────────────────────────────────────
 async function initAuth() {
-  if (!HYDROZEN.supabase) { renderAuth(); return; }
+  if (!HYDROZEN.supabase) {
+    renderAuth();
+    return;
+  }
+
   const { data } = await HYDROZEN.supabase.auth.getSession();
   HYDROZEN.session = data.session;
   renderAuth();
+
   HYDROZEN.supabase.auth.onAuthStateChange((_event, session) => {
     HYDROZEN.session = session;
     renderAuth();
@@ -235,7 +172,11 @@ function renderAuth() {
 }
 
 async function loginWithGoogle() {
-  if (!HYDROZEN.supabase) { notify("Connect Supabase env vars first.", true); return; }
+  if (!HYDROZEN.supabase) {
+    notify("Connect Supabase env vars first.", true);
+    return;
+  }
+
   const { error } = await HYDROZEN.supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: window.location.origin }
@@ -248,64 +189,63 @@ async function logout() {
   await HYDROZEN.supabase.auth.signOut();
 }
 
-// ─── Prompts ───────────────────────────────────────────────────────────────────
-async function loadPrompts(reset = false) {
-
-  if (loadingMore) return;
-
-  loadingMore = true;
-
-  if (reset) {
-    currentPage = 0;
-    HYDROZEN.prompts = [];
-    ui.grid.innerHTML = "";
-  }
+async function loadPrompts() {
+  renderSkeleton();
 
   if (!HYDROZEN.supabase) {
-    HYDROZEN.prompts = demoPrompts;
+    HYDROZEN.prompts = demoPrompts.map(prompt => ({
+      ...prompt,
+      saved: HYDROZEN.localSaved.has(prompt.id),
+      liked: HYDROZEN.localLiked.has(prompt.id)
+    }));
     renderPrompts();
-    loadingMore = false;
     return;
   }
 
-  const from = currentPage * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
+  try {
+    const userId = HYDROZEN.session?.user?.id || null;
+    const { data, error } = await HYDROZEN.supabase
+      .from("prompts_with_counts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(60);
 
-  const { data, error } = await HYDROZEN.supabase
-  .from("prompts_with_counts")
-  .select("*")
-  .order("created_at", { ascending: false })
-  .range(from, to);
+    if (error) throw error;
 
-console.log(data);
-console.log(error);
+    let likedIds = new Set();
+    let savedIds = new Set();
 
-  if (error) {
+    if (userId) {
+      const [{ data: likes }, { data: bookmarks }] = await Promise.all([
+        HYDROZEN.supabase.from("prompt_likes").select("prompt_id").eq("user_id", userId),
+        HYDROZEN.supabase.from("prompt_bookmarks").select("prompt_id").eq("user_id", userId)
+      ]);
+      likedIds = new Set((likes || []).map(item => item.prompt_id));
+      savedIds = new Set((bookmarks || []).map(item => item.prompt_id));
+    }
+
+    HYDROZEN.prompts = (data || []).map(row => ({
+      id: row.id,
+      title: row.title,
+      category: row.category,
+      creator: row.creator_name || "Hydrozen Creator",
+      image: row.image_url || "/assets/img/18.jpg",
+      prompt: row.prompt,
+      tags: row.tags || [],
+      likes: row.like_count || 0,
+      liked: likedIds.has(row.id),
+      saved: savedIds.has(row.id),
+      trending: (row.like_count || 0) >= 10
+    }));
+
+    if (!HYDROZEN.prompts.length) HYDROZEN.prompts = [...demoPrompts];
+    renderPrompts();
+  } catch (error) {
     console.error(error);
-    loadingMore = false;
-    return;
+    setStatus("Fallback", "Supabase read failed");
+    HYDROZEN.prompts = [...demoPrompts];
+    renderPrompts();
   }
-
-  const newPrompts = (data || []).map(row => ({
-    id: row.id,
-    title: row.title,
-    category: row.category,
-    creator: row.creator_name || "Hydrozen Creator",
-    image: row.image_url || "/assets/img/1.webp",
-    prompt: row.prompt,
-    tags: row.tags || [],
-    likes: row.like_count || 0,
-    liked: false,
-    saved: false,
-    trending: (row.like_count || 0) >= 10
-  }));
-
-  HYDROZEN.prompts.push(...newPrompts);
-
-  renderPrompts(newPrompts);
-
-  currentPage++;
-  loadingMore = false;
 }
 
 function renderSkeleton() {
@@ -316,61 +256,64 @@ function renderSkeleton() {
 
 function filteredPrompts() {
   const query = HYDROZEN.query.toLowerCase();
-  return HYDROZEN.prompts.filter(p => {
-    const haystack = `${p.title} ${p.category} ${p.creator} ${p.prompt} ${p.tags.join(" ")}`.toLowerCase();
-    return (!query || haystack.includes(query)) && (HYDROZEN.category === "All" || p.category === HYDROZEN.category);
+  return HYDROZEN.prompts.filter(prompt => {
+    const haystack = `${prompt.title} ${prompt.category} ${prompt.creator} ${prompt.prompt} ${prompt.tags.join(" ")}`.toLowerCase();
+    return (!query || haystack.includes(query)) && (HYDROZEN.category === "All" || prompt.category === HYDROZEN.category);
   });
 }
 
-function renderPrompts(promptsToRender = HYDROZEN.prompts) {
-
+function renderPrompts() {
+  const prompts = filteredPrompts();
+  ui.grid.classList.remove("skeleton-grid");
+  ui.grid.innerHTML = "";
   ui.totalPrompts.textContent = HYDROZEN.prompts.length;
+  ui.savedCount.textContent = HYDROZEN.prompts.filter(prompt => prompt.saved).length + HYDROZEN.localSaved.size;
+  ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
 
-  const html = promptsToRender.map(prompt => `
+  if (!prompts.length) {
+    ui.grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
+    return;
+  }
 
-    <article class="prompt-card">
-
+  prompts.forEach(prompt => {
+    const card = document.createElement("article");
+    card.className = "prompt-card";
+    card.tabIndex = 0;
+    card.innerHTML = `
       <div class="card-media">
-
-        <img
-          src="${escapeHtml(prompt.image)}"
-          alt="${escapeHtml(prompt.title)}"
-          loading="lazy"
-          decoding="async"
-          fetchpriority="low"
-        >
-
+        <picture>
+          <source srcset="${escapeHtml(toWebpHint(prompt.image))}" type="image/webp">
+          <img src="${escapeHtml(prompt.image)}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
+        </picture>
+        ${prompt.trending ? '<span class="trending-badge">Trending</span>' : ""}
+        <button class="save-button ${prompt.saved ? "is-saved" : ""}" type="button" data-save="${prompt.id}">${prompt.saved ? "Saved" : "Save"}</button>
       </div>
-
       <div class="card-body">
-
         <div class="card-meta">
           <span class="engine-chip">${escapeHtml(prompt.category)}</span>
+          <button class="likes ${prompt.liked ? "is-liked" : ""}" type="button" data-like="${prompt.id}">${formatLikes(prompt.likes)} likes</button>
         </div>
-
         <h3>${escapeHtml(prompt.title)}</h3>
-
-        <p class="creator">
-          by ${escapeHtml(prompt.creator)}
-        </p>
-
-        <p class="prompt-preview">
-          ${escapeHtml(prompt.prompt.slice(0, 140))}...
-        </p>
-
+        <p class="creator">by ${escapeHtml(prompt.creator)}</p>
+        <p class="prompt-preview">${escapeHtml(prompt.prompt)}</p>
+        <div class="tag-list">${prompt.tags.slice(0, 4).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
+        <div class="card-actions">
+          <button class="card-action" type="button" data-open="${prompt.id}">View Prompt</button>
+          <button class="card-action" type="button" data-copy="${prompt.id}">Copy</button>
+        </div>
       </div>
-
-    </article>
-
-  `).join("");
-
-  ui.grid.insertAdjacentHTML("beforeend", html);
+    `;
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter") openModal(prompt.id);
+    });
+    ui.grid.append(card);
+  });
 }
 
-// ─── Image Upload ──────────────────────────────────────────────────────────────
 async function uploadImage(file) {
   if (!file) return "/assets/img/44.jpg";
   if (!HYDROZEN.supabase || !HYDROZEN.session?.user) return readLocalImage(file);
+
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${HYDROZEN.session.user.id}/${crypto.randomUUID()}.${ext}`;
   const { error } = await HYDROZEN.supabase.storage.from("prompt-images").upload(path, file, {
@@ -378,6 +321,7 @@ async function uploadImage(file) {
     upsert: false
   });
   if (error) throw error;
+
   const { data } = HYDROZEN.supabase.storage.from("prompt-images").getPublicUrl(path);
   return data.publicUrl;
 }
@@ -390,7 +334,6 @@ function readLocalImage(file) {
   });
 }
 
-// ─── Submit Prompt ─────────────────────────────────────────────────────────────
 async function submitPrompt(event) {
   event.preventDefault();
   setSubmitting(true);
@@ -404,12 +347,11 @@ async function submitPrompt(event) {
       title: String(form.get("title") || "").trim(),
       category: String(form.get("category") || "ChatGPT"),
       prompt: String(form.get("prompt") || "").trim(),
-      tags: String(form.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
+      tags: String(form.get("tags") || "").split(",").map(tag => tag.trim()).filter(Boolean),
       image_url: imageUrl
     };
 
-    if (!payload.title || payload.prompt.length < 20)
-      throw new Error("Add a title and a prompt with at least 20 characters.");
+    if (!payload.title || payload.prompt.length < 20) throw new Error("Add a title and a prompt with at least 20 characters.");
 
     if (HYDROZEN.supabase && HYDROZEN.session?.user) {
       const { error } = await HYDROZEN.supabase.from("prompts").insert(payload);
@@ -445,7 +387,6 @@ async function submitPrompt(event) {
   }
 }
 
-// ─── Like / Save ───────────────────────────────────────────────────────────────
 async function toggleLike(id) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id);
   if (!prompt) return;
@@ -495,7 +436,6 @@ async function toggleSave(id) {
   }
 }
 
-// ─── Realtime ──────────────────────────────────────────────────────────────────
 function subscribeRealtime() {
   if (!HYDROZEN.supabase) return;
   if (HYDROZEN.realtimeChannel) HYDROZEN.supabase.removeChannel(HYDROZEN.realtimeChannel);
@@ -507,7 +447,6 @@ function subscribeRealtime() {
     .subscribe();
 }
 
-// ─── Modal ─────────────────────────────────────────────────────────────────────
 function openModal(id) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id);
   if (!prompt) return;
@@ -519,7 +458,7 @@ function openModal(id) {
   $("#modalTitle").textContent = prompt.title;
   $("#modalCreator").textContent = `Created by ${prompt.creator}`;
   $("#modalPrompt").textContent = prompt.prompt;
-  $("#modalTags").innerHTML = prompt.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("");
+  $("#modalTags").innerHTML = prompt.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
   ui.modal.hidden = false;
   document.body.classList.add("modal-open");
   $(".modal-close").focus();
@@ -530,7 +469,6 @@ function closeModal() {
   document.body.classList.remove("modal-open");
 }
 
-// ─── Clipboard / Share / Download ─────────────────────────────────────────────
 async function copyPrompt(id, button) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id) || HYDROZEN.activePrompt;
   if (!prompt) return;
@@ -559,7 +497,6 @@ function downloadPrompt() {
   URL.revokeObjectURL(url);
 }
 
-// ─── Image Preview ─────────────────────────────────────────────────────────────
 function handleImagePreview(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -577,7 +514,6 @@ function resetImagePreview() {
   ui.uploadDropText.textContent = "Drop or select a cinematic preview image";
 }
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
 function setStatus(label, title = "") {
   ui.syncStatus.textContent = label;
   ui.syncStatus.title = title;
@@ -602,12 +538,9 @@ function toWebpHint(src) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  })[char]);
+  return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
 }
 
-// ─── Reveal on Scroll ──────────────────────────────────────────────────────────
 function initReveal() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -617,10 +550,9 @@ function initReveal() {
       }
     });
   }, { threshold: 0.1 });
-  $$(".reveal").forEach(el => observer.observe(el));
+  $$(".reveal").forEach(element => observer.observe(element));
 }
 
-// ─── Events ────────────────────────────────────────────────────────────────────
 function bindEvents() {
   window.addEventListener("load", () => setTimeout(() => ui.loader.classList.add("is-hidden"), 250));
   window.addEventListener("scroll", () => ui.navbar.classList.toggle("is-scrolled", window.scrollY > 14), { passive: true });
@@ -694,37 +626,12 @@ function bindEvents() {
   $("#year").textContent = new Date().getFullYear();
 }
 
-function initInfiniteScroll() {
-
-  const trigger = document.createElement("div");
-
-  trigger.id = "scroll-trigger";
-
-  ui.grid.after(trigger);
-
-  const observer = new IntersectionObserver(entries => {
-
-    if (entries[0].isIntersecting) {
-      loadPrompts();
-    }
-
-  }, {
-    rootMargin: "1000px"
-  });
-
-  observer.observe(trigger);
-}
-// ─── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
   bindEvents();
   initReveal();
-  // FIX: Cursor glow and particle canvas are now wired up
-  initCursorGlow();
-  initParticleCanvas();
   initSupabase();
   await initAuth();
   subscribeRealtime();
-  initInfiniteScroll();
   await loadPrompts();
 }
 
