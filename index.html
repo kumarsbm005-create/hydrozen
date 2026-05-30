@@ -3,34 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="HYDROZEN is a premium AI prompt-sharing platform.">
-
-  <meta name="theme-color" content="#050505">
-  <meta name="color-scheme" content="dark">
-
+  <meta name="description" content="HYDROZEN is a premium AI prompt-sharing platform for creators, artists, and prompt engineers.">
   <title>HYDROZEN - AI Prompt Universe</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    rel="preload"
-    href="https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTcviYwY.woff2"
-    as="font"
-    type="font/woff2"
-    crossorigin
-  >
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
-
-  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=hydrozen-5">
 </head>
 <body>
   <div class="cursor-glow" aria-hidden="true"></div>
-  <div class="page-loader is-hidden" id="pageLoader" aria-hidden="true">
+  <div class="page-loader" id="pageLoader" aria-hidden="true">
     <div class="loader-orbit">
       <span></span>
       <span></span>
@@ -47,7 +27,6 @@
   </div>
 
   <header class="navbar" id="navbar">
-    <!-- FIX: All href="#..." anchors (were file:///C:/... absolute local paths) -->
     <a class="brand" href="#home" aria-label="HYDROZEN home">
       <span class="brand-glyph">H</span>
       <span>HYDROZEN</span>
@@ -73,20 +52,20 @@
   <main>
     <section class="hero" id="home">
       <div class="hero-shell">
-        <p class="eyebrow reveal is-visible">AI Prompt Exchange / Creator Operating System</p>
-        <h1 class="reveal is-visible">HYDROZEN Prompt Universe</h1>
-        <p class="hero-copy reveal is-visible">Search cinematic prompts, creator systems, Flux workflows, Grok ideas, and reusable AI intelligence.</p>
+        <p class="eyebrow reveal">AI Prompt Exchange / Creator Operating System</p>
+        <h1 class="reveal">HYDROZEN Prompt Universe</h1>
+        <p class="hero-copy reveal">Search cinematic prompts, creator systems, Flux workflows, Grok ideas, and reusable AI intelligence.</p>
 
-        <form class="hero-search reveal is-visible" role="search" id="heroSearchForm">
+        <form class="hero-search reveal" role="search" id="heroSearchForm">
           <span aria-hidden="true">Search</span>
           <label class="sr-only" for="searchInput">Search prompts</label>
           <input id="searchInput" type="search" placeholder="Search Midjourney, Flux, cinematic lighting, product shots...">
           <button type="submit">Explore</button>
         </form>
 
-        <div class="hero-metrics reveal is-visible" aria-label="Platform metrics">
+        <div class="hero-metrics reveal" aria-label="Platform metrics">
           <article>
-            <strong id="totalPrompts">6</strong>
+            <strong id="totalPrompts">0</strong>
             <span>Prompts</span>
           </article>
           <article>
@@ -117,13 +96,17 @@
 
       <div class="library-frame reveal">
         <div class="library-topline">
-          <span id="resultCount">6 prompts found</span>
+          <span id="resultCount">Loading prompts</span>
           <div class="topline-actions">
-            <span class="sync-pill" id="syncStatus" title="Supabase env missing">Demo mode</span>
+            <span class="sync-pill" id="syncStatus">Demo mode</span>
             <button class="micro-button" id="resetFilters" type="button">Reset View</button>
           </div>
         </div>
-        <div class="prompt-grid" id="promptGrid" aria-live="polite"></div>
+        <div class="prompt-grid skeleton-grid" id="promptGrid" aria-live="polite">
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+        </div>
       </div>
     </section>
 
@@ -185,7 +168,7 @@
   <div class="prompt-modal" id="promptModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
     <div class="modal-backdrop" data-close-modal></div>
     <article class="modal-card">
-      <button class="modal-close" type="button" aria-label="Close prompt" data-close-modal>&#x2715;</button>
+      <button class="modal-close" type="button" aria-label="Close prompt" data-close-modal>x</button>
       <div class="modal-image">
         <img id="modalImage" alt="">
       </div>
@@ -210,12 +193,11 @@
   <footer class="footer">
     <div class="footer-divider"></div>
     <div class="footer-content">
-      <!-- FIX: href="#home" anchor (was file:///C:/... absolute local path) -->
       <a class="brand" href="#home" aria-label="HYDROZEN home">
         <span class="brand-glyph">H</span>
         <span>HYDROZEN</span>
       </a>
-      <p>Copyright &copy; <span id="year">2026</span> HYDROZEN. All rights reserved.</p>
+      <p>Copyright (c) <span id="year"></span> HYDROZEN. All rights reserved.</p>
       <div class="socials" aria-label="Social links">
         <a href="#" aria-label="X">X</a>
         <a href="#" aria-label="Instagram">IG</a>
@@ -224,15 +206,8 @@
     </div>
   </footer>
 
-  <!-- FIX: Correct Supabase CDN URL (was malformed local cached path) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <!-- FIX: env.js served by server.js at /env.js (was file:///C:/env.js absolute local path) -->
-  <script>
-  window.HYDROZEN_ENV = {
-    SUPABASE_URL: "https://gtzkpzdnpawygcxmotrj.supabase.co",
-    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0emtwemRucGF3eWdjeG1vdHJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NDkyNDcsImV4cCI6MjA5NTAyNTI0N30.gBTsMt1-cITEF3MkwYC3gWkDeK-DqNjkywHRbcZLIeI"
-  };
-</script>
-  <script src="./script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/env.js"></script>
+  <script src="script.js?v=hydrozen-5"></script>
 </body>
 </html>
