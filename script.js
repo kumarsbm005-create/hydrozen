@@ -190,15 +190,17 @@ async function logout() {
 }
 
 async function loadPrompts() {
-  renderSkeleton();
-
-  if (!HYDROZEN.supabase) {
+  if (!HYDROZEN.prompts.length) {
     HYDROZEN.prompts = demoPrompts.map(prompt => ({
       ...prompt,
       saved: HYDROZEN.localSaved.has(prompt.id),
-      liked: HYDROZEN.localLiked.has(prompt.id)
+      liked: HYDROZEN.localLiked.has(prompt.id),
+      likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
     }));
     renderPrompts();
+  }
+
+  if (!HYDROZEN.supabase) {
     return;
   }
 
@@ -224,19 +226,24 @@ async function loadPrompts() {
       savedIds = new Set((bookmarks || []).map(item => item.prompt_id));
     }
 
-    HYDROZEN.prompts = (data || []).map(row => ({
-      id: row.id,
-      title: row.title,
-      category: row.category,
-      creator: row.creator_name || "Hydrozen Creator",
-      image: row.image_url || "/assets/img/18.jpg",
-      prompt: row.prompt,
-      tags: row.tags || [],
-      likes: row.like_count || 0,
-      liked: likedIds.has(row.id),
-      saved: savedIds.has(row.id),
-      trending: (row.like_count || 0) >= 10
-    }));
+    HYDROZEN.prompts = (data || []).map(row => {
+      const isLocallyLiked = !userId && HYDROZEN.localLiked.has(row.id);
+      const likeCount = (row.like_count || 0) + (isLocallyLiked ? 1 : 0);
+
+      return {
+        id: row.id,
+        title: row.title,
+        category: row.category,
+        creator: row.creator_name || "Hydrozen Creator",
+        image: row.image_url || "/assets/img/18.jpg",
+        prompt: row.prompt,
+        tags: row.tags || [],
+        likes: likeCount,
+        liked: userId ? likedIds.has(row.id) : HYDROZEN.localLiked.has(row.id),
+        saved: userId ? savedIds.has(row.id) : HYDROZEN.localSaved.has(row.id),
+        trending: likeCount >= 10
+      };
+    });
 
     if (!HYDROZEN.prompts.length) HYDROZEN.prompts = [...demoPrompts];
     renderPrompts();
