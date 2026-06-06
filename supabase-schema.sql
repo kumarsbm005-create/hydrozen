@@ -12,7 +12,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.prompts (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  user_id uuid default auth.uid() references auth.users(id) on delete set null,
   title text not null check (char_length(title) between 3 and 120),
   category text not null check (category in ('ChatGPT', 'Midjourney', 'Stable Diffusion', 'Grok', 'Flux')),
   prompt text not null check (char_length(prompt) >= 20),
@@ -21,6 +21,8 @@ create table if not exists public.prompts (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.prompts alter column user_id drop not null;
 
 create table if not exists public.prompt_likes (
   prompt_id uuid not null references public.prompts(id) on delete cascade,
@@ -76,7 +78,8 @@ create trigger on_auth_user_created
 after insert on auth.users
 for each row execute function public.handle_new_user();
 
-create or replace view public.prompts_with_counts as
+create or replace view public.prompts_with_counts
+with (security_invoker = true) as
 select
   p.id,
   p.user_id,
@@ -234,3 +237,14 @@ create index if not exists prompts_created_at_idx on public.prompts (created_at 
 create index if not exists prompts_category_idx on public.prompts (category);
 create index if not exists prompt_likes_prompt_id_idx on public.prompt_likes (prompt_id);
 create index if not exists prompt_bookmarks_user_id_idx on public.prompt_bookmarks (user_id);
+
+grant usage on schema public to anon, authenticated;
+grant select on public.profiles to anon, authenticated;
+grant update on public.profiles to authenticated;
+grant select on public.prompts to anon, authenticated;
+grant insert, update, delete on public.prompts to authenticated;
+grant select on public.prompt_likes to anon, authenticated;
+grant insert, delete on public.prompt_likes to authenticated;
+grant select on public.prompt_bookmarks to authenticated;
+grant insert, delete on public.prompt_bookmarks to authenticated;
+grant select on public.prompts_with_counts to anon, authenticated;
