@@ -79,6 +79,22 @@ const demoPrompts = [
   }
 ];
 
+function readStoredSet(key) {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+  } catch (_error) {
+    return new Set();
+  }
+}
+
+function writeStoredSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify([...value]));
+  } catch (_error) {
+    // Non-critical: interaction state can degrade without persistence.
+  }
+}
+
 const HYDROZEN = {
   supabase: null,
   session: null,
@@ -86,37 +102,92 @@ const HYDROZEN = {
   category: "All",
   query: "",
   realtimeChannel: null,
-  localSaved: new Set(JSON.parse(localStorage.getItem("hydrozen:saved") || "[]")),
-  localLiked: new Set(JSON.parse(localStorage.getItem("hydrozen:liked") || "[]"))
+  localSaved: readStoredSet("hydrozen:saved"),
+  localLiked: readStoredSet("hydrozen:liked")
 };
 
-const $ = selector => document.querySelector(selector);
-const $$ = selector => [...document.querySelectorAll(selector)];
-
-const ui = {
-  loader: $("#pageLoader"),
-  navbar: $("#navbar"),
-  navToggle: $("#navToggle"),
-  navMenu: $(".nav-menu"),
-  search: $("#searchInput"),
-  grid: $("#promptGrid"),
-  resultCount: $("#resultCount"),
-  totalPrompts: $("#totalPrompts"),
-  savedCount: $("#savedCount"),
-  resetFilters: $("#resetFilters"),
-  syncStatus: $("#syncStatus"),
-  googleLogin: $("#googleLogin"),
-  logoutButton: $("#logoutButton"),
-  userPill: $("#userPill"),
-  modal: $("#promptModal"),
-  uploadForm: $("#uploadForm"),
-  formStatus: $("#formStatus"),
-  submitButton: $(".submit-button"),
-  imageUpload: $("#imageUpload"),
-  imagePreview: $("#imagePreview"),
-  uploadDrop: $(".upload-drop"),
-  uploadDropText: $("#uploadDropText")
+const uiSelectors = {
+  loader: "#pageLoader",
+  navbar: "#navbar",
+  navToggle: "#navToggle",
+  navMenu: ".nav-menu",
+  search: "#searchInput",
+  grid: "#promptGrid",
+  resultCount: "#resultCount",
+  totalPrompts: "#totalPrompts",
+  savedCount: "#savedCount",
+  resetFilters: "#resetFilters",
+  syncStatus: "#syncStatus",
+  googleLogin: "#googleLogin",
+  logoutButton: "#logoutButton",
+  userPill: "#userPill",
+  modal: "#promptModal",
+  uploadForm: "#uploadForm",
+  formStatus: "#formStatus",
+  submitButton: ".submit-button",
+  imageUpload: "#imageUpload",
+  imagePreview: "#imagePreview",
+  uploadDrop: ".upload-drop",
+  uploadDropText: "#uploadDropText"
 };
+
+function safeQuery(selector, root = document) {
+  if (!selector || !root?.querySelector) return null;
+  try {
+    return root.querySelector(selector);
+  } catch (_error) {
+    return null;
+  }
+}
+
+function safeQueryAll(selector, root = document) {
+  if (!selector || !root?.querySelectorAll) return [];
+  try {
+    return [...root.querySelectorAll(selector)];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function safeBind(element, event, handler, options) {
+  if (!element?.addEventListener || typeof handler !== "function") return false;
+  element.addEventListener(event, (...args) => {
+    try {
+      const result = handler(...args);
+      if (result?.catch) result.catch(error => console.error(`[HYDROZEN:${event}]`, error));
+    } catch (error) {
+      console.error(`[HYDROZEN:${event}]`, error);
+    }
+  }, options);
+  return true;
+}
+
+function safeRun(label, task) {
+  try {
+    return task();
+  } catch (error) {
+    console.error(`[HYDROZEN:${label}]`, error);
+    return null;
+  }
+}
+
+async function safeRunAsync(label, task) {
+  try {
+    return await task();
+  } catch (error) {
+    console.error(`[HYDROZEN:${label}]`, error);
+    return null;
+  }
+}
+
+const ui = new Proxy({}, {
+  get(_target, key) {
+    return safeQuery(uiSelectors[key]);
+  }
+});
+
+const $ = safeQuery;
+const $$ = safeQueryAll;
 
 function getSupabaseConfig() {
   const env = window.HYDROZEN_ENV || {};
@@ -159,16 +230,18 @@ async function initAuth() {
   HYDROZEN.supabase.auth.onAuthStateChange((_event, session) => {
     HYDROZEN.session = session;
     renderAuth();
-    loadPrompts();
+    return safeRunAsync("auth-change-prompts", loadPrompts);
   });
 }
 
 function renderAuth() {
   const user = HYDROZEN.session?.user;
-  ui.googleLogin.hidden = Boolean(user);
-  ui.logoutButton.hidden = !user;
-  ui.userPill.hidden = !user;
-  ui.userPill.textContent = user?.user_metadata?.full_name || user?.email || "";
+  if (ui.googleLogin) ui.googleLogin.hidden = Boolean(user);
+  if (ui.logoutButton) ui.logoutButton.hidden = !user;
+  if (ui.userPill) {
+    ui.userPill.hidden = !user;
+    ui.userPill.textContent = user?.user_metadata?.full_name || user?.email || "";
+  }
 }
 
 async function loginWithGoogle() {
@@ -256,29 +329,36 @@ async function loadPrompts() {
 }
 
 function renderSkeleton() {
-  ui.grid.classList.add("skeleton-grid");
-  ui.grid.innerHTML = '<article class="skeleton-card"></article><article class="skeleton-card"></article><article class="skeleton-card"></article>';
-  ui.resultCount.textContent = "Loading prompts";
+  const grid = ui.grid;
+  if (grid) {
+    grid.classList.add("skeleton-grid");
+    grid.innerHTML = '<article class="skeleton-card"></article><article class="skeleton-card"></article><article class="skeleton-card"></article>';
+  }
+  if (ui.resultCount) ui.resultCount.textContent = "Loading prompts";
 }
 
 function filteredPrompts() {
   const query = HYDROZEN.query.toLowerCase();
   return HYDROZEN.prompts.filter(prompt => {
-    const haystack = `${prompt.title} ${prompt.category} ${prompt.creator} ${prompt.prompt} ${prompt.tags.join(" ")}`.toLowerCase();
+    const tags = Array.isArray(prompt.tags) ? prompt.tags.join(" ") : "";
+    const haystack = `${prompt.title || ""} ${prompt.category || ""} ${prompt.creator || ""} ${prompt.prompt || ""} ${tags}`.toLowerCase();
     return (!query || haystack.includes(query)) && (HYDROZEN.category === "All" || prompt.category === HYDROZEN.category);
   });
 }
 
 function renderPrompts() {
+  const grid = ui.grid;
+  if (!grid) return;
+
   const prompts = filteredPrompts();
-  ui.grid.classList.remove("skeleton-grid");
-  ui.grid.innerHTML = "";
-  ui.totalPrompts.textContent = HYDROZEN.prompts.length;
-  ui.savedCount.textContent = HYDROZEN.prompts.filter(prompt => prompt.saved).length + HYDROZEN.localSaved.size;
-  ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
+  grid.classList.remove("skeleton-grid");
+  grid.innerHTML = "";
+  if (ui.totalPrompts) ui.totalPrompts.textContent = HYDROZEN.prompts.length;
+  if (ui.savedCount) ui.savedCount.textContent = HYDROZEN.prompts.filter(prompt => prompt.saved).length + HYDROZEN.localSaved.size;
+  if (ui.resultCount) ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
 
   if (!prompts.length) {
-    ui.grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
+    grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
     return;
   }
 
@@ -303,17 +383,17 @@ function renderPrompts() {
         <h3>${escapeHtml(prompt.title)}</h3>
         <p class="creator">by ${escapeHtml(prompt.creator)}</p>
         <p class="prompt-preview">${escapeHtml(prompt.prompt)}</p>
-        <div class="tag-list">${prompt.tags.slice(0, 4).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
+        <div class="tag-list">${(Array.isArray(prompt.tags) ? prompt.tags : []).slice(0, 4).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
         <div class="card-actions">
           <button class="card-action" type="button" data-open="${prompt.id}">View Prompt</button>
           <button class="card-action" type="button" data-copy="${prompt.id}">Copy</button>
         </div>
       </div>
     `;
-    card.addEventListener("keydown", event => {
+    safeBind(card, "keydown", event => {
       if (event.key === "Enter") openModal(prompt.id);
     });
-    ui.grid.append(card);
+    grid.append(card);
   });
 }
 
@@ -343,12 +423,15 @@ function readLocalImage(file) {
 
 async function submitPrompt(event) {
   event.preventDefault();
+  const formElement = ui.uploadForm;
+  if (!formElement) return;
+
   setSubmitting(true);
   notify("Publishing prompt...");
 
   try {
-    const form = new FormData(ui.uploadForm);
-    const file = ui.imageUpload.files[0];
+    const form = new FormData(formElement);
+    const file = ui.imageUpload?.files?.[0];
     const imageUrl = await uploadImage(file);
     const payload = {
       title: String(form.get("title") || "").trim(),
@@ -384,7 +467,7 @@ async function submitPrompt(event) {
       renderPrompts();
     }
 
-    ui.uploadForm.reset();
+    formElement.reset();
     resetImagePreview();
     await loadPrompts();
   } catch (error) {
@@ -402,7 +485,7 @@ async function toggleLike(id) {
     prompt.liked = !prompt.liked;
     prompt.likes += prompt.liked ? 1 : -1;
     prompt.liked ? HYDROZEN.localLiked.add(id) : HYDROZEN.localLiked.delete(id);
-    localStorage.setItem("hydrozen:liked", JSON.stringify([...HYDROZEN.localLiked]));
+    writeStoredSet("hydrozen:liked", HYDROZEN.localLiked);
     renderPrompts();
     return;
   }
@@ -426,7 +509,7 @@ async function toggleSave(id) {
   if (!HYDROZEN.supabase || !HYDROZEN.session?.user || id.startsWith("demo")) {
     prompt.saved = !prompt.saved;
     prompt.saved ? HYDROZEN.localSaved.add(id) : HYDROZEN.localSaved.delete(id);
-    localStorage.setItem("hydrozen:saved", JSON.stringify([...HYDROZEN.localSaved]));
+    writeStoredSet("hydrozen:saved", HYDROZEN.localSaved);
     renderPrompts();
     return;
   }
@@ -457,29 +540,35 @@ function subscribeRealtime() {
 function openModal(id) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id);
   if (!prompt) return;
+  const modal = ui.modal;
+  if (!modal) return;
+
   HYDROZEN.activePrompt = prompt;
-  $("#modalImage").src = prompt.image;
-  $("#modalImage").alt = `${prompt.title} preview`;
-  $("#modalCategory").textContent = prompt.category;
-  $("#modalLikes").textContent = `${formatLikes(prompt.likes)} likes`;
-  $("#modalTitle").textContent = prompt.title;
-  $("#modalCreator").textContent = `Created by ${prompt.creator}`;
-  $("#modalPrompt").textContent = prompt.prompt;
-  $("#modalTags").innerHTML = prompt.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
-  ui.modal.hidden = false;
-  document.body.classList.add("modal-open");
-  $(".modal-close").focus();
+  const modalImage = $("#modalImage");
+  if (modalImage) {
+    modalImage.src = prompt.image;
+    modalImage.alt = `${prompt.title} preview`;
+  }
+  if ($("#modalCategory")) $("#modalCategory").textContent = prompt.category;
+  if ($("#modalLikes")) $("#modalLikes").textContent = `${formatLikes(prompt.likes)} likes`;
+  if ($("#modalTitle")) $("#modalTitle").textContent = prompt.title;
+  if ($("#modalCreator")) $("#modalCreator").textContent = `Created by ${prompt.creator}`;
+  if ($("#modalPrompt")) $("#modalPrompt").textContent = prompt.prompt;
+  if ($("#modalTags")) $("#modalTags").innerHTML = (Array.isArray(prompt.tags) ? prompt.tags : []).map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
+  modal.hidden = false;
+  document.body?.classList.add("modal-open");
+  $(".modal-close")?.focus();
 }
 
 function closeModal() {
-  ui.modal.hidden = true;
-  document.body.classList.remove("modal-open");
+  if (ui.modal) ui.modal.hidden = true;
+  document.body?.classList.remove("modal-open");
 }
 
 async function copyPrompt(id, button) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id) || HYDROZEN.activePrompt;
   if (!prompt) return;
-  await navigator.clipboard.writeText(prompt.prompt);
+  if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(prompt.prompt);
   if (!button) return;
   const original = button.textContent;
   button.textContent = "Copied";
@@ -490,7 +579,7 @@ async function sharePrompt() {
   if (!HYDROZEN.activePrompt) return;
   const data = { title: HYDROZEN.activePrompt.title, text: HYDROZEN.activePrompt.prompt, url: location.href };
   if (navigator.share) await navigator.share(data);
-  else await navigator.clipboard.writeText(`${data.title}\n\n${data.text}`);
+  else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(`${data.title}\n\n${data.text}`);
 }
 
 function downloadPrompt() {
@@ -508,30 +597,33 @@ function handleImagePreview(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    ui.imagePreview.src = reader.result;
-    ui.uploadDrop.classList.add("has-image");
-    ui.uploadDropText.textContent = "Preview attached";
+    if (ui.imagePreview) ui.imagePreview.src = reader.result;
+    ui.uploadDrop?.classList.add("has-image");
+    if (ui.uploadDropText) ui.uploadDropText.textContent = "Preview attached";
   };
   reader.readAsDataURL(file);
 }
 
 function resetImagePreview() {
-  ui.imagePreview.removeAttribute("src");
-  ui.uploadDrop.classList.remove("has-image");
-  ui.uploadDropText.textContent = "Drop or select a cinematic preview image";
+  ui.imagePreview?.removeAttribute("src");
+  ui.uploadDrop?.classList.remove("has-image");
+  if (ui.uploadDropText) ui.uploadDropText.textContent = "Drop or select a cinematic preview image";
 }
 
 function setStatus(label, title = "") {
+  if (!ui.syncStatus) return;
   ui.syncStatus.textContent = label;
   ui.syncStatus.title = title;
 }
 
 function notify(message, isError = false) {
+  if (!ui.formStatus) return;
   ui.formStatus.textContent = message;
   ui.formStatus.classList.toggle("is-error", isError);
 }
 
 function setSubmitting(isSubmitting) {
+  if (!ui.submitButton) return;
   ui.submitButton.classList.toggle("is-submitting", isSubmitting);
   ui.submitButton.disabled = isSubmitting;
 }
@@ -549,6 +641,11 @@ function escapeHtml(value) {
 }
 
 function initReveal() {
+  if (!("IntersectionObserver" in window)) {
+    $$(".reveal").forEach(element => element.classList.add("is-visible"));
+    return;
+  }
+
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -561,85 +658,92 @@ function initReveal() {
 }
 
 function bindEvents() {
-  window.addEventListener("load", () => setTimeout(() => ui.loader.classList.add("is-hidden"), 250));
-  window.addEventListener("scroll", () => ui.navbar.classList.toggle("is-scrolled", window.scrollY > 14), { passive: true });
+  safeBind(window, "load", () => setTimeout(() => ui.loader?.classList.add("is-hidden"), 250));
+  safeBind(window, "scroll", () => ui.navbar?.classList.toggle("is-scrolled", window.scrollY > 14), { passive: true });
 
-  ui.navToggle.addEventListener("click", () => {
-    const isOpen = ui.navMenu.classList.toggle("is-open");
-    ui.navToggle.setAttribute("aria-expanded", String(isOpen));
+  safeBind(ui.navToggle, "click", () => {
+    const isOpen = Boolean(ui.navMenu?.classList.toggle("is-open"));
+    ui.navToggle?.setAttribute("aria-expanded", String(isOpen));
   });
-  ui.navMenu.addEventListener("click", event => {
-    if (!event.target.closest("a")) return;
-    ui.navMenu.classList.remove("is-open");
-    ui.navToggle.setAttribute("aria-expanded", "false");
+  safeBind(ui.navMenu, "click", event => {
+    if (!event.target?.closest?.("a")) return;
+    ui.navMenu?.classList.remove("is-open");
+    ui.navToggle?.setAttribute("aria-expanded", "false");
   });
-  window.addEventListener("resize", () => {
+  safeBind(window, "resize", () => {
     if (window.innerWidth > 768) {
-      ui.navMenu.classList.remove("is-open");
-      ui.navToggle.setAttribute("aria-expanded", "false");
+      ui.navMenu?.classList.remove("is-open");
+      ui.navToggle?.setAttribute("aria-expanded", "false");
     }
   });
 
-  ui.googleLogin.addEventListener("click", loginWithGoogle);
-  ui.logoutButton.addEventListener("click", logout);
-  ui.search.addEventListener("input", event => {
+  safeBind(ui.googleLogin, "click", loginWithGoogle);
+  safeBind(ui.logoutButton, "click", logout);
+  safeBind(ui.search, "input", event => {
     HYDROZEN.query = event.target.value.trim();
     renderPrompts();
   });
-  $("#heroSearchForm").addEventListener("submit", event => {
+  safeBind($("#heroSearchForm"), "submit", event => {
     event.preventDefault();
-    $("#explore").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("#explore")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   $$(".filter-pill").forEach(button => {
-    button.addEventListener("click", () => {
+    safeBind(button, "click", () => {
       HYDROZEN.category = button.dataset.category;
       $$(".filter-pill").forEach(item => item.classList.toggle("active", item === button));
       renderPrompts();
     });
   });
-  ui.resetFilters.addEventListener("click", () => {
+  safeBind(ui.resetFilters, "click", () => {
     HYDROZEN.category = "All";
     HYDROZEN.query = "";
-    ui.search.value = "";
+    if (ui.search) ui.search.value = "";
     $$(".filter-pill").forEach(button => button.classList.toggle("active", button.dataset.category === "All"));
     renderPrompts();
   });
-  ui.grid.addEventListener("click", event => {
-    const saveButton = event.target.closest("[data-save]");
-    const likeButton = event.target.closest("[data-like]");
-    const copyButton = event.target.closest("[data-copy]");
-    const openButton = event.target.closest("[data-open]");
+  safeBind(ui.grid, "click", event => {
+    const target = event.target;
+    if (!target?.closest) return;
+    const saveButton = target.closest("[data-save]");
+    const likeButton = target.closest("[data-like]");
+    const copyButton = target.closest("[data-copy]");
+    const openButton = target.closest("[data-open]");
     if (saveButton) toggleSave(saveButton.dataset.save);
     if (likeButton) toggleLike(likeButton.dataset.like);
     if (copyButton) copyPrompt(copyButton.dataset.copy, copyButton);
     if (openButton) openModal(openButton.dataset.open);
   });
-  ui.modal.addEventListener("click", event => {
-    if (event.target.matches("[data-close-modal]")) closeModal();
+  safeBind(ui.modal, "click", event => {
+    if (event.target?.matches?.("[data-close-modal]")) closeModal();
   });
-  window.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !ui.modal.hidden) closeModal();
+  safeBind(window, "keydown", event => {
+    if (event.key === "Escape" && ui.modal && !ui.modal.hidden) closeModal();
   });
-  $("#modalCopy").addEventListener("click", event => copyPrompt(HYDROZEN.activePrompt?.id, event.currentTarget));
-  $("#modalShare").addEventListener("click", sharePrompt);
-  $("#modalDownload").addEventListener("click", downloadPrompt);
-  ui.imageUpload.addEventListener("change", event => handleImagePreview(event.target.files[0]));
-  ui.uploadDrop.addEventListener("dragover", event => event.preventDefault());
-  ui.uploadDrop.addEventListener("drop", event => {
+  safeBind($("#modalCopy"), "click", event => copyPrompt(HYDROZEN.activePrompt?.id, event.currentTarget));
+  safeBind($("#modalShare"), "click", sharePrompt);
+  safeBind($("#modalDownload"), "click", downloadPrompt);
+  safeBind(ui.imageUpload, "change", event => handleImagePreview(event.target.files?.[0]));
+  safeBind(ui.uploadDrop, "dragover", event => event.preventDefault());
+  safeBind(ui.uploadDrop, "drop", event => {
     event.preventDefault();
-    handleImagePreview(event.dataTransfer.files[0]);
+    handleImagePreview(event.dataTransfer?.files?.[0]);
   });
-  ui.uploadForm.addEventListener("submit", submitPrompt);
-  $("#year").textContent = new Date().getFullYear();
+  safeBind(ui.uploadForm, "submit", submitPrompt);
+  if ($("#year")) $("#year").textContent = new Date().getFullYear();
 }
 
 async function boot() {
-  bindEvents();
-  initReveal();
-  initSupabase();
-  await initAuth();
-  subscribeRealtime();
-  await loadPrompts();
+  safeRun("bind-events", bindEvents);
+  safeRun("reveal", initReveal);
+  safeRun("supabase", initSupabase);
+  await safeRunAsync("auth", initAuth);
+  safeRun("realtime", subscribeRealtime);
+  await safeRunAsync("prompts", loadPrompts);
+  ui.loader?.classList.add("is-hidden");
 }
 
-boot();
+if (document.readyState === "loading") {
+  safeBind(document, "DOMContentLoaded", boot);
+} else {
+  boot();
+}
