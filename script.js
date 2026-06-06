@@ -199,9 +199,31 @@ function getSupabaseConfig() {
   };
 }
 
-function initSupabase() {
+function waitForSupabaseClient(timeout = 2500) {
+  if (window.supabase?.createClient) return Promise.resolve(true);
+
+  return new Promise(resolve => {
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      if (window.supabase?.createClient) {
+        window.clearInterval(timer);
+        resolve(true);
+        return;
+      }
+
+      if (Date.now() - started >= timeout) {
+        window.clearInterval(timer);
+        resolve(false);
+      }
+    }, 80);
+  });
+}
+
+async function initSupabase() {
   const config = getSupabaseConfig();
-  if (!config.url || !config.anonKey || !window.supabase?.createClient) {
+  const hasClient = await waitForSupabaseClient();
+
+  if (!config.url || !config.anonKey || !hasClient) {
     setStatus("Demo mode", "Supabase env missing");
     return;
   }
@@ -751,7 +773,7 @@ function bindEvents() {
 async function boot() {
   safeRun("bind-events", bindEvents);
   safeRun("reveal", initReveal);
-  safeRun("supabase", initSupabase);
+  await safeRunAsync("supabase", initSupabase);
   await safeRunAsync("auth", initAuth);
   safeRun("realtime", subscribeRealtime);
   await safeRunAsync("prompts", loadPrompts);
