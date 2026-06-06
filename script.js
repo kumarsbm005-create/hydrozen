@@ -128,7 +128,9 @@ const uiSelectors = {
   imageUpload: "#imageUpload",
   imagePreview: "#imagePreview",
   uploadDrop: ".upload-drop",
-  uploadDropText: "#uploadDropText"
+  uploadDropText: "#uploadDropText",
+  mobileSearch: "[data-mobile-search]",
+  mobileAccount: "[data-mobile-account]"
 };
 
 function safeQuery(selector, root = document) {
@@ -366,6 +368,7 @@ function renderPrompts() {
     const card = document.createElement("article");
     card.className = "prompt-card";
     card.tabIndex = 0;
+    card.dataset.cardOpen = prompt.id;
     card.innerHTML = `
       <div class="card-media">
         <picture>
@@ -708,10 +711,12 @@ function bindEvents() {
     const likeButton = target.closest("[data-like]");
     const copyButton = target.closest("[data-copy]");
     const openButton = target.closest("[data-open]");
+    const cardButton = target.closest("[data-card-open]");
     if (saveButton) toggleSave(saveButton.dataset.save);
-    if (likeButton) toggleLike(likeButton.dataset.like);
-    if (copyButton) copyPrompt(copyButton.dataset.copy, copyButton);
-    if (openButton) openModal(openButton.dataset.open);
+    else if (likeButton) toggleLike(likeButton.dataset.like);
+    else if (copyButton) copyPrompt(copyButton.dataset.copy, copyButton);
+    else if (openButton) openModal(openButton.dataset.open);
+    else if (cardButton) openModal(cardButton.dataset.cardOpen);
   });
   safeBind(ui.modal, "click", event => {
     if (event.target?.matches?.("[data-close-modal]")) closeModal();
@@ -729,6 +734,17 @@ function bindEvents() {
     handleImagePreview(event.dataTransfer?.files?.[0]);
   });
   safeBind(ui.uploadForm, "submit", submitPrompt);
+  safeBind(ui.mobileSearch, "click", () => {
+    $("#home")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => ui.search?.focus(), 350);
+  });
+  safeBind(ui.mobileAccount, "click", () => {
+    if (HYDROZEN.session?.user) {
+      $("#upload")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      loginWithGoogle();
+    }
+  });
   if ($("#year")) $("#year").textContent = new Date().getFullYear();
 }
 
