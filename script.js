@@ -102,6 +102,7 @@ const HYDROZEN = {
   category: "All",
   query: "",
   realtimeChannel: null,
+  loadRequestId: 0,
   localSaved: readStoredSet("hydrozen:saved"),
   localLiked: readStoredSet("hydrozen:liked")
 };
@@ -132,6 +133,10 @@ const uiSelectors = {
   mobileSearch: "[data-mobile-search]",
   mobileAccount: "[data-mobile-account]"
 };
+
+const FALLBACK_IMAGE = "/assets/img/18.jpg";
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 function safeQuery(selector, root = document) {
   if (!selector || !root?.querySelector) return null;
@@ -258,6 +263,106 @@ async function initAuth() {
   });
 }
 
+function currentUserId() {
+  return HYDROZEN.session?.user?.id || null;
+}
+
+function normalizePromptRow(row, likedIds = new Set(), savedIds = new Set()) {
+  const userId = currentUserId();
+  const isLocallyLiked = !userId && HYDROZEN.localLiked.has(row.id);
+  const likeCount = Number(row.like_count || 0) + (isLocallyLiked ? 1 : 0);
+
+  return {
+    id: row.id,
+    title: row.title || "Untitled prompt",
+    category: row.category || "ChatGPT",
+    creator: row.creator_name || "Hydrozen Creator",
+    image: row.image_url || FALLBACK_IMAGE,
+    prompt: row.prompt || "",
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    likes: likeCount,
+    liked: userId ? likedIds.has(row.id) : HYDROZEN.localLiked.has(row.id),
+    saved: userId ? savedIds.has(row.id) : HYDROZEN.localSaved.has(row.id),
+    trending: likeCount >= 10
+  };
+}
+
+async function fetchPromptRows() {
+  const viewResult = await HYDROZEN.supabase
+    .from("prompts_with_counts")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(60);
+
+  if (!viewResult.error) return viewResult.data || [];
+
+  console.warn("[HYDROZEN:supabase-view]", viewResult.error.message);
+  setStatus("Supabase", "Using prompts table fallback");
+
+  const tableResult = await HYDROZEN.supabase
+    .from("prompts")
+    .select("id,user_id,title,category,prompt,tags,image_url,created_at,updated_at")
+    .order("created_at", { ascending: false })
+    .limit(60);
+
+  if (tableResult.error) throw tableResult.error;
+
+  const rows = tableResult.data || [];
+  if (!rows.length) return [];
+
+  const { data: likes } = await HYDROZEN.supabase
+    .from("prompt_likes")
+    .select("prompt_id");
+
+  const likeCounts = new Map();
+  (likes || []).forEach(item => {
+    likeCounts.set(item.prompt_id, (likeCounts.get(item.prompt_id) || 0) + 1);
+  });
+
+  return rows.map(row => ({
+    ...row,
+    creator_name: "Hydrozen Creator",
+    like_count: likeCounts.get(row.id) || 0,
+    bookmark_count: 0
+  }));
+}
+
+function makeAssetUrl(src) {
+  if (!src) return FALLBACK_IMAGE;
+  return String(src);
+}
+
+function setImageFallback(image) {
+  if (!image) return;
+  image.onerror = () => {
+    image.onerror = null;
+    image.src = FALLBACK_IMAGE;
+  };
+}
+
+async function writeClipboard(text) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.append(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  return copied;
+}
+
+function createObjectId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function renderAuth() {
   const user = HYDROZEN.session?.user;
   if (ui.googleLogin) ui.googleLogin.hidden = Boolean(user);
@@ -287,6 +392,8 @@ async function logout() {
 }
 
 async function loadPrompts() {
+  const requestId = ++HYDROZEN.loadRequestId;
+
   if (!HYDROZEN.prompts.length) {
     HYDROZEN.prompts = demoPrompts.map(prompt => ({
       ...prompt,
@@ -302,14 +409,8 @@ async function loadPrompts() {
   }
 
   try {
-    const userId = HYDROZEN.session?.user?.id || null;
-    const { data, error } = await HYDROZEN.supabase
-      .from("prompts_with_counts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(60);
-
-    if (error) throw error;
+    const userId = currentUserId();
+    const data = await fetchPromptRows();
 
     let likedIds = new Set();
     let savedIds = new Set();
@@ -323,31 +424,28 @@ async function loadPrompts() {
       savedIds = new Set((bookmarks || []).map(item => item.prompt_id));
     }
 
-    HYDROZEN.prompts = (data || []).map(row => {
-      const isLocallyLiked = !userId && HYDROZEN.localLiked.has(row.id);
-      const likeCount = (row.like_count || 0) + (isLocallyLiked ? 1 : 0);
+    if (requestId !== HYDROZEN.loadRequestId) return;
 
-      return {
-        id: row.id,
-        title: row.title,
-        category: row.category,
-        creator: row.creator_name || "Hydrozen Creator",
-        image: row.image_url || "/assets/img/18.jpg",
-        prompt: row.prompt,
-        tags: row.tags || [],
-        likes: likeCount,
-        liked: userId ? likedIds.has(row.id) : HYDROZEN.localLiked.has(row.id),
-        saved: userId ? savedIds.has(row.id) : HYDROZEN.localSaved.has(row.id),
-        trending: likeCount >= 10
-      };
-    });
+    HYDROZEN.prompts = (data || []).map(row => normalizePromptRow(row, likedIds, savedIds));
 
-    if (!HYDROZEN.prompts.length) HYDROZEN.prompts = [...demoPrompts];
+    if (!HYDROZEN.prompts.length) {
+      HYDROZEN.prompts = demoPrompts.map(prompt => ({
+        ...prompt,
+        saved: HYDROZEN.localSaved.has(prompt.id),
+        liked: HYDROZEN.localLiked.has(prompt.id),
+        likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
+      }));
+    }
     renderPrompts();
   } catch (error) {
     console.error(error);
     setStatus("Fallback", "Supabase read failed");
-    HYDROZEN.prompts = [...demoPrompts];
+    HYDROZEN.prompts = demoPrompts.map(prompt => ({
+      ...prompt,
+      saved: HYDROZEN.localSaved.has(prompt.id),
+      liked: HYDROZEN.localLiked.has(prompt.id),
+      likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
+    }));
     renderPrompts();
   }
 }
@@ -393,10 +491,7 @@ function renderPrompts() {
     card.dataset.cardOpen = prompt.id;
     card.innerHTML = `
       <div class="card-media">
-        <picture>
-          <source srcset="${escapeHtml(toWebpHint(prompt.image))}" type="image/webp">
-          <img src="${escapeHtml(prompt.image)}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
-        </picture>
+        <img src="${escapeHtml(makeAssetUrl(prompt.image))}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
         ${prompt.trending ? '<span class="trending-badge">Trending</span>' : ""}
         <button class="save-button ${prompt.saved ? "is-saved" : ""}" type="button" data-save="${prompt.id}">${prompt.saved ? "Saved" : "Save"}</button>
       </div>
@@ -418,16 +513,23 @@ function renderPrompts() {
     safeBind(card, "keydown", event => {
       if (event.key === "Enter") openModal(prompt.id);
     });
+    setImageFallback(card.querySelector("img"));
     grid.append(card);
   });
 }
 
 async function uploadImage(file) {
   if (!file) return "/assets/img/44.jpg";
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error("Upload a JPG, PNG, WebP, or GIF image.");
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("Image must be smaller than 5 MB.");
+  }
   if (!HYDROZEN.supabase || !HYDROZEN.session?.user) return readLocalImage(file);
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${HYDROZEN.session.user.id}/${crypto.randomUUID()}.${ext}`;
+  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const path = `${HYDROZEN.session.user.id}/${createObjectId()}.${ext}`;
   const { error } = await HYDROZEN.supabase.storage.from("prompt-images").upload(path, file, {
     cacheControl: "31536000",
     upsert: false
@@ -439,9 +541,10 @@ async function uploadImage(file) {
 }
 
 function readLocalImage(file) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read selected image."));
     reader.readAsDataURL(file);
   });
 }
@@ -458,6 +561,7 @@ async function submitPrompt(event) {
     const form = new FormData(formElement);
     const file = ui.imageUpload?.files?.[0];
     const imageUrl = await uploadImage(file);
+    const userId = currentUserId();
     const payload = {
       title: String(form.get("title") || "").trim(),
       category: String(form.get("category") || "ChatGPT"),
@@ -468,8 +572,8 @@ async function submitPrompt(event) {
 
     if (!payload.title || payload.prompt.length < 20) throw new Error("Add a title and a prompt with at least 20 characters.");
 
-    if (HYDROZEN.supabase && HYDROZEN.session?.user) {
-      const { error } = await HYDROZEN.supabase.from("prompts").insert(payload);
+    if (HYDROZEN.supabase && userId) {
+      const { error } = await HYDROZEN.supabase.from("prompts").insert({ ...payload, user_id: userId });
       if (error) throw error;
       notify("Prompt published to Supabase.");
     } else if (HYDROZEN.supabase && !HYDROZEN.session?.user) {
@@ -505,10 +609,11 @@ async function submitPrompt(event) {
 async function toggleLike(id) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id);
   if (!prompt) return;
+  const userId = currentUserId();
 
-  if (!HYDROZEN.supabase || !HYDROZEN.session?.user || id.startsWith("demo")) {
+  if (!HYDROZEN.supabase || !userId || id.startsWith("demo")) {
     prompt.liked = !prompt.liked;
-    prompt.likes += prompt.liked ? 1 : -1;
+    prompt.likes = Math.max(0, prompt.likes + (prompt.liked ? 1 : -1));
     prompt.liked ? HYDROZEN.localLiked.add(id) : HYDROZEN.localLiked.delete(id);
     writeStoredSet("hydrozen:liked", HYDROZEN.localLiked);
     renderPrompts();
@@ -517,9 +622,13 @@ async function toggleLike(id) {
 
   try {
     if (prompt.liked) {
-      await HYDROZEN.supabase.from("prompt_likes").delete().eq("prompt_id", id).eq("user_id", HYDROZEN.session.user.id);
+      const { error } = await HYDROZEN.supabase.from("prompt_likes").delete().eq("prompt_id", id).eq("user_id", userId);
+      if (error) throw error;
     } else {
-      await HYDROZEN.supabase.from("prompt_likes").insert({ prompt_id: id });
+      const { error } = await HYDROZEN.supabase
+        .from("prompt_likes")
+        .upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
+      if (error) throw error;
     }
     await loadPrompts();
   } catch (error) {
@@ -530,8 +639,9 @@ async function toggleLike(id) {
 async function toggleSave(id) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id);
   if (!prompt) return;
+  const userId = currentUserId();
 
-  if (!HYDROZEN.supabase || !HYDROZEN.session?.user || id.startsWith("demo")) {
+  if (!HYDROZEN.supabase || !userId || id.startsWith("demo")) {
     prompt.saved = !prompt.saved;
     prompt.saved ? HYDROZEN.localSaved.add(id) : HYDROZEN.localSaved.delete(id);
     writeStoredSet("hydrozen:saved", HYDROZEN.localSaved);
@@ -541,9 +651,13 @@ async function toggleSave(id) {
 
   try {
     if (prompt.saved) {
-      await HYDROZEN.supabase.from("prompt_bookmarks").delete().eq("prompt_id", id).eq("user_id", HYDROZEN.session.user.id);
+      const { error } = await HYDROZEN.supabase.from("prompt_bookmarks").delete().eq("prompt_id", id).eq("user_id", userId);
+      if (error) throw error;
     } else {
-      await HYDROZEN.supabase.from("prompt_bookmarks").insert({ prompt_id: id });
+      const { error } = await HYDROZEN.supabase
+        .from("prompt_bookmarks")
+        .upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
+      if (error) throw error;
     }
     await loadPrompts();
   } catch (error) {
@@ -571,8 +685,9 @@ function openModal(id) {
   HYDROZEN.activePrompt = prompt;
   const modalImage = $("#modalImage");
   if (modalImage) {
-    modalImage.src = prompt.image;
+    modalImage.src = makeAssetUrl(prompt.image);
     modalImage.alt = `${prompt.title} preview`;
+    setImageFallback(modalImage);
   }
   if ($("#modalCategory")) $("#modalCategory").textContent = prompt.category;
   if ($("#modalLikes")) $("#modalLikes").textContent = `${formatLikes(prompt.likes)} likes`;
@@ -580,6 +695,14 @@ function openModal(id) {
   if ($("#modalCreator")) $("#modalCreator").textContent = `Created by ${prompt.creator}`;
   if ($("#modalPrompt")) $("#modalPrompt").textContent = prompt.prompt;
   if ($("#modalTags")) $("#modalTags").innerHTML = (Array.isArray(prompt.tags) ? prompt.tags : []).map(tag => `<span>${escapeHtml(tag)}</span>`).join("");
+  if ($("#modalLike")) {
+    $("#modalLike").textContent = prompt.liked ? "Liked" : "Like";
+    $("#modalLike").classList.toggle("is-active", prompt.liked);
+  }
+  if ($("#modalSave")) {
+    $("#modalSave").textContent = prompt.saved ? "Saved" : "Save";
+    $("#modalSave").classList.toggle("is-active", prompt.saved);
+  }
   modal.hidden = false;
   document.body?.classList.add("modal-open");
   $(".modal-close")?.focus();
@@ -593,7 +716,11 @@ function closeModal() {
 async function copyPrompt(id, button) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id) || HYDROZEN.activePrompt;
   if (!prompt) return;
-  if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(prompt.prompt);
+  const copied = await writeClipboard(prompt.prompt);
+  if (!copied) {
+    notify("Copy is blocked in this browser. Select the prompt manually.", true);
+    return;
+  }
   if (!button) return;
   const original = button.textContent;
   button.textContent = "Copied";
@@ -604,7 +731,7 @@ async function sharePrompt() {
   if (!HYDROZEN.activePrompt) return;
   const data = { title: HYDROZEN.activePrompt.title, text: HYDROZEN.activePrompt.prompt, url: location.href };
   if (navigator.share) await navigator.share(data);
-  else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(`${data.title}\n\n${data.text}`);
+  else await writeClipboard(`${data.title}\n\n${data.text}`);
 }
 
 function downloadPrompt() {
@@ -655,10 +782,6 @@ function setSubmitting(isSubmitting) {
 
 function formatLikes(value) {
   return value > 999 ? `${(value / 1000).toFixed(1)}k` : String(Math.max(value, 0));
-}
-
-function toWebpHint(src) {
-  return src.startsWith("data:") || src.includes("supabase") ? src : src.replace(/\.(jpg|jpeg|png)$/i, ".webp");
 }
 
 function escapeHtml(value) {
@@ -745,6 +868,18 @@ function bindEvents() {
   });
   safeBind(window, "keydown", event => {
     if (event.key === "Escape" && ui.modal && !ui.modal.hidden) closeModal();
+  });
+  safeBind($("#modalLike"), "click", async () => {
+    if (!HYDROZEN.activePrompt?.id) return;
+    await toggleLike(HYDROZEN.activePrompt.id);
+    const refreshed = HYDROZEN.prompts.find(item => item.id === HYDROZEN.activePrompt.id);
+    if (refreshed) openModal(refreshed.id);
+  });
+  safeBind($("#modalSave"), "click", async () => {
+    if (!HYDROZEN.activePrompt?.id) return;
+    await toggleSave(HYDROZEN.activePrompt.id);
+    const refreshed = HYDROZEN.prompts.find(item => item.id === HYDROZEN.activePrompt.id);
+    if (refreshed) openModal(refreshed.id);
   });
   safeBind($("#modalCopy"), "click", event => copyPrompt(HYDROZEN.activePrompt?.id, event.currentTarget));
   safeBind($("#modalShare"), "click", sharePrompt);
