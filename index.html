@@ -1,47 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="HYDROZEN is a premium AI prompt-sharing platform for creators, artists, and prompt engineers.">
-  <title>HYDROZEN - AI Prompt Universe</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=hydrozen-11">
-</head>
-<body>
-  <div class="cursor-glow" aria-hidden="true"></div>
-  <div class="page-loader" id="pageLoader" aria-hidden="true">
-    <div class="loader-orbit">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <p>Initializing HYDROZEN</p>
-  </div>
-
-  <div class="ambient-scene" aria-hidden="true">
-    <div class="glow glow-one"></div>
-    <div class="glow glow-two"></div>
-    <div class="glow glow-three"></div>
-    <canvas id="particleCanvas"></canvas>
-  </div>
-
-  <header class="navbar" id="navbar">
-    <a class="brand" href="#home" aria-label="HYDROZEN home">
-      <span class="brand-glyph">H</span>
-      <span>HYDROZEN</span>
-    </a>
-
-    <nav class="nav-menu" aria-label="Main navigation">
-      <a href="#explore">Explore</a>
-      <a href="#upload">Upload Prompt</a>
-    </nav>
-
-    <div class="auth-cluster">
-      <button class="auth-button" id="googleLogin" type="button">Google Login</button>
-      <button class="auth-button ghost" id="logoutButton" type="button" hidden>Logout</button>
-      <span class="user-pill" id="userPill" hidden></span>
-    </div>
 
     <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
       <span></span>
@@ -98,3 +54,135 @@
         <div class="library-topline">
           <span id="resultCount">Loading prompts</span>
           <div class="topline-actions">
+            <span class="sync-pill" id="syncStatus">Demo mode</span>
+            <button class="micro-button" id="resetFilters" type="button">Reset View</button>
+          </div>
+        </div>
+        <div class="prompt-grid skeleton-grid" id="promptGrid" aria-live="polite">
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+          <article class="skeleton-card"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="upload-section" id="upload">
+      <div class="upload-shell reveal">
+        <div class="upload-copy">
+          <p class="eyebrow">Upload Prompt</p>
+          <h2>Publish a prompt into the HYDROZEN stream.</h2>
+          <p>Login with Google, attach a lightweight preview image, and publish directly to Supabase with realtime updates.</p>
+        </div>
+
+        <form class="upload-form" id="uploadForm">
+          <div class="field">
+            <label for="promptTitle">Prompt Title</label>
+            <input id="promptTitle" name="title" type="text" minlength="3" required placeholder="Neon monolith product campaign">
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="promptCategory">Engine</label>
+              <select id="promptCategory" name="category" required>
+                <option>ChatGPT</option>
+                <option>Midjourney</option>
+                <option>Stable Diffusion</option>
+                <option>Grok</option>
+                <option>Flux</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="promptTags">Tags</label>
+              <input id="promptTags" name="tags" type="text" placeholder="cinematic, luxury, neon">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="promptText">Full Prompt</label>
+            <textarea id="promptText" name="prompt" rows="6" minlength="20" required placeholder="Describe the full prompt with subject, style, lighting, lens, mood, and quality details..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="imageUpload">Image Preview</label>
+            <label class="upload-drop" for="imageUpload">
+              <input id="imageUpload" name="imageUpload" type="file" accept="image/*">
+              <span id="uploadDropText">Drop or select a cinematic preview image</span>
+              <img id="imagePreview" alt="">
+            </label>
+          </div>
+
+          <button class="submit-button" type="submit">
+            <span>Submit Prompt</span>
+            <i aria-hidden="true"></i>
+          </button>
+          <p class="form-status" id="formStatus" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="prompt-modal" id="promptModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <article class="modal-card">
+      <button class="modal-close" type="button" aria-label="Close prompt" data-close-modal>x</button>
+      <div class="modal-image">
+        <img id="modalImage" alt="">
+      </div>
+      <div class="modal-content">
+        <div class="modal-kicker">
+          <span id="modalCategory"></span>
+          <span id="modalLikes"></span>
+        </div>
+        <h2 id="modalTitle"></h2>
+        <p id="modalCreator"></p>
+        <div class="modal-tags" id="modalTags"></div>
+        <pre id="modalPrompt"></pre>
+        <div class="modal-actions">
+          <button type="button" id="modalCopy">Copy</button>
+          <button type="button" id="modalShare">Share</button>
+          <button type="button" id="modalDownload">Download</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-divider"></div>
+    <div class="footer-content">
+      <a class="brand" href="#home" aria-label="HYDROZEN home">
+        <span class="brand-glyph">H</span>
+        <span>HYDROZEN</span>
+      </a>
+      <p>Copyright (c) <span id="year"></span> HYDROZEN. All rights reserved.</p>
+      <div class="socials" aria-label="Social links">
+        <a href="#" aria-label="X">X</a>
+        <a href="#" aria-label="Instagram">IG</a>
+        <a href="#" aria-label="Discord">DC</a>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="mobile-dock" aria-label="Mobile navigation">
+    <a class="mobile-dock-item is-active" href="#home" aria-label="Home">
+      <span class="dock-icon dock-home" aria-hidden="true"></span>
+      <span>Home</span>
+    </a>
+    <button class="mobile-dock-item" type="button" data-mobile-search aria-label="Search">
+      <span class="dock-icon dock-search" aria-hidden="true"></span>
+      <span>Search</span>
+    </button>
+    <a class="mobile-dock-item" href="#explore" aria-label="Explore">
+      <span class="dock-icon dock-explore" aria-hidden="true"></span>
+      <span>Explore</span>
+    </a>
+    <button class="mobile-dock-item" type="button" data-mobile-account aria-label="Account">
+      <span class="dock-avatar" aria-hidden="true">H</span>
+      <span>Account</span>
+    </button>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
+  <script src="/env.js"></script>
+  <script src="script.js?v=hydrozen-12"></script>
+</body>
+</html>
