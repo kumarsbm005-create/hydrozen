@@ -1,3 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HYDROZEN is a premium AI prompt-sharing platform for creators, artists, and prompt engineers.">
+  <title>HYDROZEN - AI Prompt Universe</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=hydrozen-13">
+  <script>
+    window.setTimeout(function () {
+      var loader = document.getElementById("pageLoader");
+      if (loader) loader.classList.add("is-hidden");
+    }, 3500);
+  </script>
+</head>
+<body>
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="page-loader" id="pageLoader" aria-hidden="true">
+    <div class="loader-orbit">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <p>Initializing HYDROZEN</p>
+  </div>
+
+  <div class="ambient-scene" aria-hidden="true">
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+    <div class="glow glow-three"></div>
+    <canvas id="particleCanvas"></canvas>
+  </div>
+
+  <header class="navbar" id="navbar">
+    <a class="brand" href="#home" aria-label="HYDROZEN home">
+      <span class="brand-glyph">H</span>
+      <span>HYDROZEN</span>
+    </a>
+
+    <nav class="nav-menu" aria-label="Main navigation">
+      <a href="#explore">Explore</a>
+      <a href="#upload">Upload Prompt</a>
+    </nav>
+
+    <div class="auth-cluster">
+      <button class="auth-button" id="googleLogin" type="button">Google Login</button>
+      <button class="auth-button ghost" id="logoutButton" type="button" hidden>Logout</button>
+      <span class="user-pill" id="userPill" hidden></span>
+    </div>
 
     <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
       <span></span>
@@ -138,6 +188,8 @@
         <div class="modal-tags" id="modalTags"></div>
         <pre id="modalPrompt"></pre>
         <div class="modal-actions">
+          <button type="button" id="modalLike">Like</button>
+          <button type="button" id="modalSave">Save</button>
           <button type="button" id="modalCopy">Copy</button>
           <button type="button" id="modalShare">Share</button>
           <button type="button" id="modalDownload">Download</button>
@@ -183,6 +235,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="/env.js"></script>
-  <script src="script.js?v=hydrozen-12"></script>
+  <script src="script.js?v=hydrozen-13"></script>
 </body>
 </html>
