@@ -1293,6 +1293,242 @@ h2 {
   }
 }
 
+@media (max-width: 768px) {
+  .cursor-glow {
+    display: none;
+  }
+
+  .navbar {
+    align-items: center;
+    border-radius: 1.5rem;
+    padding: 0.65rem;
+    display: grid;
+    grid-template-columns: auto auto;
+  }
+
+  .brand {
+    min-width: 0;
+    font-size: 0.75rem;
+  }
+
+  .brand-glyph {
+    width: 2.35rem;
+    height: 2.35rem;
+    flex: 0 0 auto;
+  }
+
+  .nav-toggle {
+    display: block;
+    flex: 0 0 auto;
+    justify-self: end;
+  }
+
+  .nav-menu {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    left: 0;
+    right: 0;
+    display: grid;
+    grid-template-rows: 0fr;
+    align-items: stretch;
+    gap: 0.35rem;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 1.25rem;
+    background: rgba(8, 9, 14, 0.97);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-0.45rem);
+    transition: grid-template-rows 240ms ease, opacity 240ms ease, transform 240ms ease, padding 240ms ease, border-color 240ms ease;
+  }
+
+  .auth-cluster {
+    order: 3;
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .auth-button,
+  .user-pill {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 2.05rem;
+    padding: 0 0.65rem;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .nav-menu.is-open {
+    grid-template-rows: 1fr;
+    padding: 0.65rem;
+    border-color: var(--line);
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .nav-menu a {
+    display: block;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .hero {
+    padding: 2.5rem 0.75rem 1rem;
+  }
+
+  .hero-shell {
+    width: 100%;
+    padding: 1.55rem 1rem;
+    border-radius: 1.35rem;
+  }
+
+  .hero-shell::before {
+    background-size: 3rem 3rem;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    line-height: 1.6;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 11vw, 3.15rem);
+    line-height: 1.08;
+  }
+
+  .hero-copy {
+    font-size: 0.96rem;
+    line-height: 1.65;
+  }
+
+  .hero-search {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.65rem;
+    border-radius: 1.25rem;
+  }
+
+  .hero-search span {
+    display: none;
+  }
+
+  .hero-search input {
+    width: 100%;
+    height: 3.1rem;
+    padding: 0 0.9rem;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.045);
+  }
+
+  .hero-search button {
+    width: 100%;
+    min-height: 3.1rem;
+  }
+
+  .hero-metrics,
+  .prompt-grid,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-metrics {
+    gap: 0.65rem;
+  }
+
+  .hero-metrics article {
+    padding: 0.9rem;
+  }
+
+  .filters-section,
+  .upload-section {
+    width: calc(100% - 1.5rem);
+    padding: 2.75rem 0;
+  }
+
+  .section-heading,
+  .footer-content,
+  .library-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topline-actions {
+    width: 100%;
+  }
+
+  .filter-rail {
+    border-radius: 1.15rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .filter-pill {
+    scroll-snap-align: start;
+  }
+
+  .library-frame,
+  .upload-shell {
+    border-radius: 1.35rem;
+    padding: 0.85rem;
+  }
+
+  .card-media {
+    height: auto;
+    aspect-ratio: 16 / 11;
+  }
+
+  .prompt-card {
+    min-height: auto;
+  }
+
+  .card-actions,
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+
+  .card-action,
+  .modal-actions button {
+    flex: 1 1 8.5rem;
+  }
+
+  .upload-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-card {
+    width: min(100%, 36rem);
+    max-height: calc(100dvh - 1.5rem);
+    border-radius: 1.35rem;
+    overflow-y: auto;
+  }
+
+  .modal-content {
+    padding: 1.25rem;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 0 -1.25rem -1.25rem;
+    padding: 0.75rem 1.25rem 1rem;
+    border-top: 1px solid var(--line);
+    background: rgba(9, 10, 14, 0.96);
+    backdrop-filter: blur(10px);
+  }
+
+  #modalPrompt {
+    max-height: 9rem;
+    font-size: 0.9rem;
+  }
+
+  .footer {
+    width: calc(100% - 1.5rem);
+  }
+}
+
 @media (max-width: 576px) {
   .navbar {
     width: calc(100% - 1rem);
