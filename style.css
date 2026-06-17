@@ -683,7 +683,8 @@ h2 {
 
 .card-media {
   position: relative;
-  height: 230px;
+  height: auto;         
+  aspect-ratio: 4 / 3;  
   overflow: hidden;
   background: #101116;
 }
@@ -1633,8 +1634,8 @@ h2 {
 
   .modal-image,
   .modal-image img {
-    max-height: 10.5rem;
-    height: 10.5rem;
+    max-height: 16rem;
+    height: 16rem;
   }
 }
 
@@ -2123,8 +2124,8 @@ h2 {
 
   .modal-image,
   .modal-image img {
-    height: 14rem;
-    max-height: 14rem;
+    height: 22rem;
+    max-height: 22rem;
   }
 
   .modal-actions {
@@ -2162,8 +2163,8 @@ h2 {
 
   .modal-image,
   .modal-image img {
-    height: 12rem;
-    max-height: 12rem;
+    height: 14rem;
+    max-height: 14rem;
   }
 
   .modal-actions {
