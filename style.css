@@ -846,7 +846,7 @@ h2 {
     var(--accent),
     var(--accent-2)
   );
-  box-shadow: 0 0 20px rgba(236, 230, 212, 0.25);
+  box-shadow: 0 0 20px rgba(236,230,212,.25);
 }
 .card-action:hover,
 .card-action:focus-visible {
