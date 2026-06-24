@@ -506,7 +506,7 @@ function renderPrompts() {
         <div class="tag-list">${(Array.isArray(prompt.tags) ? prompt.tags : []).slice(0, 4).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
         <div class="card-actions">
           <button class="card-action" type="button" data-open="${prompt.id}">View Prompt</button>
-          <button class="card-action" type="button" data-copy="${prompt.id}">Copy</button>
+          <button class="card-action copy-button" type="button" data-copy="${prompt.id}">Copy</button>
         </div>
       </div>
     `;
