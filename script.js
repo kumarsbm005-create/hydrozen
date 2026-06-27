@@ -292,7 +292,7 @@ async function fetchPromptRows() {
     .from("prompts_with_counts")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(60);
+    .limit(5000);
 
   if (!viewResult.error) return viewResult.data || [];
 
@@ -303,7 +303,7 @@ async function fetchPromptRows() {
     .from("prompts")
     .select("id,user_id,title,category,prompt,tags,image_url,created_at,updated_at")
     .order("created_at", { ascending: false })
-    .limit(60);
+    .limit(5000);
 
   if (tableResult.error) throw tableResult.error;
 
