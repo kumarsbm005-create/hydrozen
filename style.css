@@ -1102,12 +1102,15 @@ h2 {
   font-weight: 900;
 }
 
-.modal-content h2 {
-  margin-bottom: 10px;
+.modal-content{
+    padding:24px 20px;
 }
 
-#modalCreator {
-  color: var(--muted);
+#modalCreator{
+    display:block;
+    margin-bottom:20px;
+    color:var(--muted);
+    font-size:.95rem;
 }
 
 .modal-tags {
@@ -1530,6 +1533,12 @@ h2 {
     overflow-y: auto;
   }
 
+  .modal-content h2{
+    margin:24px 0 8px;
+    font-size:2rem;
+    line-height:1.05;
+}
+
   .modal-actions {
     position: sticky;
     bottom: 0;
@@ -1655,12 +1664,21 @@ h2 {
     max-height: calc(100dvh - 1rem);
   }
 
-  .modal-image,
-  .modal-image img {
-    max-height: 18rem;
-    height: auto;
-    object-fit: contain;
-  }
+.modal-image{
+    padding:16px 16px 0;
+    background:transparent;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-shrink:0;
+}
+
+.modal-image img{
+    width:100%;
+    height:auto;
+    max-height:58vh;
+    object-fit:contain;
+    border-radius:18px;
 }
 
 @media (max-width: 480px) {
