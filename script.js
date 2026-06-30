@@ -203,7 +203,9 @@ function getSupabaseConfig() {
     anonKey: env.SUPABASE_ANON_KEY || ""
   };
 }
-
+const imageViewer = $("#imageViewer");
+const viewerImg = $("#viewerImg");
+const viewerBack = $("#viewerBack");
 function waitForSupabaseClient(timeout = 2500) {
   if (window.supabase?.createClient) return Promise.resolve(true);
 
@@ -517,6 +519,20 @@ function renderPrompts() {
     grid.append(card);
   });
 }
+if (modalImage) {
+
+    modalImage.src = makeAssetUrl(prompt.image);
+    modalImage.alt = `${prompt.title} preview`;
+    setImageFallback(modalImage);
+
+}
+modalImage.onclick = () => {
+
+    viewerImg.src = modalImage.src;
+
+    imageViewer.hidden = false;
+
+};
 
 async function uploadImage(file) {
   if (!file) return "/assets/img/44.jpg";
@@ -908,6 +924,27 @@ function bindEvents() {
     event.preventDefault();
     handleImagePreview(event.dataTransfer?.files?.[0]);
   });
+  safeBind(window, "keydown", event => {
+
+    if (event.key === "Escape"){
+
+        if(!imageViewer.hidden){
+
+            imageViewer.hidden=true;
+            return;
+
+        }
+
+        if(ui.modal && !ui.modal.hidden){
+
+            closeModal();
+
+        }
+
+    }
+
+});
+  
   safeBind(ui.uploadForm, "submit", submitPrompt);
   safeBind(ui.mobileSearch, "click", () => {
     $("#home")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -920,8 +957,14 @@ function bindEvents() {
       loginWithGoogle();
     }
   });
+  safeBind(viewerBack, "click", () => {
+
+    imageViewer.hidden = true;
+
+});
   if ($("#year")) $("#year").textContent = new Date().getFullYear();
 }
+
 
 async function boot() {
   safeRun("bind-events", bindEvents);
