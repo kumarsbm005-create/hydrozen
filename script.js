@@ -683,12 +683,30 @@ function openModal(id) {
   if (!modal) return;
 
   HYDROZEN.activePrompt = prompt;
-  const modalImage = $("#modalImage");
-  if (modalImage) {
-    modalImage.src = makeAssetUrl(prompt.image);
-    modalImage.alt = `${prompt.title} preview`;
-    setImageFallback(modalImage);
-  }
+ const modalImage = $("#modalImage");
+if (modalImage) {
+  modalImage.src = makeAssetUrl(prompt.image);
+  modalImage.alt = `${prompt.title} preview`;
+  setImageFallback(modalImage);
+
+  // Remove previous click listener
+  modalImage.onclick = null;
+
+  // Open fullscreen on click
+  modalImage.onclick = async () => {
+    try {
+      if (modalImage.requestFullscreen) {
+        await modalImage.requestFullscreen();
+      } else if (modalImage.webkitRequestFullscreen) {
+        modalImage.webkitRequestFullscreen();
+      } else if (modalImage.msRequestFullscreen) {
+        modalImage.msRequestFullscreen();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+}
   if ($("#modalCategory")) $("#modalCategory").textContent = prompt.category;
   if ($("#modalLikes")) $("#modalLikes").textContent = `${formatLikes(prompt.likes)} likes`;
   if ($("#modalTitle")) $("#modalTitle").textContent = prompt.title;
