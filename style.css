@@ -2234,3 +2234,67 @@ h2 {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ===========================
+   FULLSCREEN IMAGE VIEWER
+=========================== */
+
+.image-viewer{
+    position:fixed;
+    inset:0;
+    z-index:9999;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:rgba(0,0,0,.96);
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.25s;
+}
+
+.image-viewer:not([hidden]){
+    opacity:1;
+    visibility:visible;
+}
+
+.image-viewer img{
+
+    max-width:95vw;
+    max-height:95vh;
+
+    object-fit:contain;
+
+    border-radius:12px;
+
+    cursor:zoom-out;
+}
+
+.viewer-close{
+
+    position:absolute;
+
+    top:20px;
+    right:20px;
+
+    width:42px;
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.15);
+
+    color:#fff;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    backdrop-filter:blur(8px);
+
+}
