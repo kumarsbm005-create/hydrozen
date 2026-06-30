@@ -914,7 +914,14 @@ async function boot() {
   await safeRunAsync("prompts", loadPrompts);
   ui.loader?.classList.add("is-hidden");
 }
-
+// Navbar links with data-nav-category auto-select that filter pill
+document.querySelectorAll("[data-nav-category]").forEach(link => {
+  link.addEventListener("click", () => {
+    const category = link.dataset.navCategory;
+    const pill = document.querySelector(`.filter-pill[data-category="${category}"]`);
+    if (pill) pill.click();
+  });
+});
 if (document.readyState === "loading") {
   safeBind(document, "DOMContentLoaded", boot);
 } else {
