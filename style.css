@@ -2348,3 +2348,63 @@ transition: transform .2s ease;
     pointer-events:none;
 
 }
+/* ==========================
+   Fullscreen Viewer
+========================== */
+
+.image-viewer{
+
+    position:fixed;
+    inset:0;
+
+    z-index:9999;
+
+    background:#000;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+.image-viewer[hidden]{
+
+    display:none;
+
+}
+
+.image-viewer img{
+
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+
+}
+
+.viewer-back{
+
+    position:absolute;
+
+    top:18px;
+    left:16px;
+
+    z-index:10000;
+
+    border:none;
+
+    padding:10px 16px;
+
+    border-radius:999px;
+
+    background:rgba(0,0,0,.55);
+
+    color:white;
+
+    backdrop-filter:blur(12px);
+
+    font-size:15px;
+
+    cursor:pointer;
+
+}
