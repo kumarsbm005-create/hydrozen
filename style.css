@@ -1086,6 +1086,8 @@ h2 {
   height: 100%;
   object-fit: contain;
   display: block;
+  cursor: zoom-in;
+transition: transform .2s ease;
 }
 
 .modal-content {
@@ -1269,6 +1271,15 @@ h2 {
   .hero {
     padding-top: 4.5rem;
   }
+}
+@media (hover:hover){
+
+.modal-image img:hover{
+
+    transform:scale(1.02);
+
+}
+
 }
 
 @media (max-width: 992px) {
@@ -2296,5 +2307,44 @@ h2 {
     cursor:pointer;
 
     backdrop-filter:blur(8px);
+
+}
+.modal-image{
+
+    position:relative;
+
+}
+
+.modal-image::after{
+
+    content:"⤢";
+
+    position:absolute;
+
+    bottom:28px;
+
+    right:28px;
+
+    width:36px;
+
+    height:36px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:50%;
+
+    background:rgba(0,0,0,.55);
+
+    color:white;
+
+    font-size:18px;
+
+    backdrop-filter:blur(10px);
+
+    pointer-events:none;
 
 }
