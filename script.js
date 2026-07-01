@@ -1,12 +1,3 @@
-const demoPrompts = [
-  { id: "demo-midnight-product", title: "Midnight Monolith Product Campaign", category: "Midjourney", creator: "Aarav Syntax", image: "/assets/img/1.jpg", prompt: "A black titanium smart fragrance bottle standing on a wet obsidian plinth, soft cream rim light, premium product photography, minimal cinematic atmosphere, shallow depth of field, ultra clean luxury campaign.", tags: ["product", "luxury", "campaign"], likes: 1284, liked: false, saved: false, trending: true },
-  { id: "demo-glass-oracle", title: "Glass Oracle Fashion Portrait", category: "Flux", creator: "Mira Voss", image: "/assets/img/2.jpg", prompt: "High fashion portrait of an oracle wearing translucent glass armor, black studio void, soft white halo gradients, expensive editorial lighting, future couture, cinematic realism.", tags: ["portrait", "fashion", "glass"], likes: 974, liked: false, saved: false, trending: true },
-  { id: "demo-brand-system", title: "Elite Brand Strategy System", category: "ChatGPT", creator: "Noor Atlas", image: "/assets/img/18.jpg", prompt: "Act as a senior brand strategist and creative director. Build a premium positioning system for a futuristic AI startup with audience psychology, visual language, offer ladder, and homepage messaging.", tags: ["strategy", "startup", "system"], likes: 846, liked: false, saved: false, trending: false },
-  { id: "demo-vertical-city", title: "Rainlit Vertical City", category: "Stable Diffusion", creator: "Kenji Frame", image: "/assets/img/38.jpg", prompt: "A massive vertical city at night after rain, reflective black streets, white holographic signage, cinematic fog layers, futuristic minimal architecture, elegant cyberpunk realism.", tags: ["city", "cyberpunk", "rain"], likes: 1532, liked: false, saved: false, trending: true },
-  { id: "demo-grok-saas", title: "Viral AI Tool Ideas", category: "Grok", creator: "Isha Vector", image: "/assets/img/39.jpg", prompt: "Generate 25 commercially realistic AI micro-SaaS ideas for solo builders. Include target user, pain, MVP, pricing angle, and viral demo hook.", tags: ["ideas", "saas", "builder"], likes: 621, liked: false, saved: false, trending: false },
-  { id: "demo-luxury-interior", title: "Silent Luxury Interior", category: "Flux", creator: "Elena Darkroom", image: "/assets/img/40.jpg", prompt: "A silent luxury penthouse interior at blue hour, black stone, warm indirect light, sculptural furniture, futuristic skyline, museum-grade minimalism, editorial realism.", tags: ["interior", "luxury", "calm"], likes: 1198, liked: false, saved: false, trending: true }
-];
-
 function readStoredSet(key) {
   try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
   catch (_error) { return new Set(); }
@@ -255,20 +246,21 @@ async function logout() {
   await HYDROZEN.supabase.auth.signOut();
 }
 
+function shuffleArray(array) {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 async function loadPrompts() {
   const requestId = ++HYDROZEN.loadRequestId;
 
-  if (!HYDROZEN.prompts.length) {
-    HYDROZEN.prompts = demoPrompts.map(prompt => ({
-      ...prompt,
-      saved: HYDROZEN.localSaved.has(prompt.id),
-      liked: HYDROZEN.localLiked.has(prompt.id),
-      likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
-    }));
-    renderPrompts();
-  }
+  if (!HYDROZEN.prompts.length) renderSkeleton();
 
-  if (!HYDROZEN.supabase) return;
+  if (!HYDROZEN.supabase) { renderPrompts(); return; }
 
   try {
     const userId = currentUserId();
@@ -288,27 +280,14 @@ async function loadPrompts() {
 
     if (requestId !== HYDROZEN.loadRequestId) return;
 
-    HYDROZEN.prompts = (data || []).map(row => normalizePromptRow(row, likedIds, savedIds));
-
-    if (!HYDROZEN.prompts.length) {
-      HYDROZEN.prompts = demoPrompts.map(prompt => ({
-        ...prompt,
-        saved: HYDROZEN.localSaved.has(prompt.id),
-        liked: HYDROZEN.localLiked.has(prompt.id),
-        likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
-      }));
-    }
+    const normalized = (data || []).map(row => normalizePromptRow(row, likedIds, savedIds));
+    HYDROZEN.prompts = shuffleArray(normalized);
     renderPrompts();
 
   } catch (error) {
     console.error(error);
-    setStatus("Fallback", "Supabase read failed");
-    HYDROZEN.prompts = demoPrompts.map(prompt => ({
-      ...prompt,
-      saved: HYDROZEN.localSaved.has(prompt.id),
-      liked: HYDROZEN.localLiked.has(prompt.id),
-      likes: prompt.likes + (HYDROZEN.localLiked.has(prompt.id) ? 1 : 0)
-    }));
+    setStatus("Error", "Supabase read failed");
+    HYDROZEN.prompts = [];
     renderPrompts();
   }
 }
