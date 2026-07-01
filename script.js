@@ -1,112 +1,33 @@
 const demoPrompts = [
-  {
-    id: "demo-midnight-product",
-    title: "Midnight Monolith Product Campaign",
-    category: "Midjourney",
-    creator: "Aarav Syntax",
-    image: "/assets/img/1.jpg",
-    prompt: "A black titanium smart fragrance bottle standing on a wet obsidian plinth, soft cream rim light, premium product photography, minimal cinematic atmosphere, shallow depth of field, ultra clean luxury campaign.",
-    tags: ["product", "luxury", "campaign"],
-    likes: 1284,
-    liked: false,
-    saved: false,
-    trending: true
-  },
-  {
-    id: "demo-glass-oracle",
-    title: "Glass Oracle Fashion Portrait",
-    category: "Flux",
-    creator: "Mira Voss",
-    image: "/assets/img/2.jpg",
-    prompt: "High fashion portrait of an oracle wearing translucent glass armor, black studio void, soft white halo gradients, expensive editorial lighting, future couture, cinematic realism.",
-    tags: ["portrait", "fashion", "glass"],
-    likes: 974,
-    liked: false,
-    saved: false,
-    trending: true
-  },
-  {
-    id: "demo-brand-system",
-    title: "Elite Brand Strategy System",
-    category: "ChatGPT",
-    creator: "Noor Atlas",
-    image: "/assets/img/18.jpg",
-    prompt: "Act as a senior brand strategist and creative director. Build a premium positioning system for a futuristic AI startup with audience psychology, visual language, offer ladder, and homepage messaging.",
-    tags: ["strategy", "startup", "system"],
-    likes: 846,
-    liked: false,
-    saved: false,
-    trending: false
-  },
-  {
-    id: "demo-vertical-city",
-    title: "Rainlit Vertical City",
-    category: "Stable Diffusion",
-    creator: "Kenji Frame",
-    image: "/assets/img/38.jpg",
-    prompt: "A massive vertical city at night after rain, reflective black streets, white holographic signage, cinematic fog layers, futuristic minimal architecture, elegant cyberpunk realism.",
-    tags: ["city", "cyberpunk", "rain"],
-    likes: 1532,
-    liked: false,
-    saved: false,
-    trending: true
-  },
-  {
-    id: "demo-grok-saas",
-    title: "Viral AI Tool Ideas",
-    category: "Grok",
-    creator: "Isha Vector",
-    image: "/assets/img/39.jpg",
-    prompt: "Generate 25 commercially realistic AI micro-SaaS ideas for solo builders. Include target user, pain, MVP, pricing angle, and viral demo hook.",
-    tags: ["ideas", "saas", "builder"],
-    likes: 621,
-    liked: false,
-    saved: false,
-    trending: false
-  },
-  {
-    id: "demo-luxury-interior",
-    title: "Silent Luxury Interior",
-    category: "Flux",
-    creator: "Elena Darkroom",
-    image: "/assets/img/40.jpg",
-    prompt: "A silent luxury penthouse interior at blue hour, black stone, warm indirect light, sculptural furniture, futuristic skyline, museum-grade minimalism, editorial realism.",
-    tags: ["interior", "luxury", "calm"],
-    likes: 1198,
-    liked: false,
-    saved: false,
-    trending: true
-  }
+  { id: "demo-midnight-product", title: "Midnight Monolith Product Campaign", category: "Midjourney", creator: "Aarav Syntax", image: "/assets/img/1.jpg", prompt: "A black titanium smart fragrance bottle standing on a wet obsidian plinth, soft cream rim light, premium product photography, minimal cinematic atmosphere, shallow depth of field, ultra clean luxury campaign.", tags: ["product", "luxury", "campaign"], likes: 1284, liked: false, saved: false, trending: true },
+  { id: "demo-glass-oracle", title: "Glass Oracle Fashion Portrait", category: "Flux", creator: "Mira Voss", image: "/assets/img/2.jpg", prompt: "High fashion portrait of an oracle wearing translucent glass armor, black studio void, soft white halo gradients, expensive editorial lighting, future couture, cinematic realism.", tags: ["portrait", "fashion", "glass"], likes: 974, liked: false, saved: false, trending: true },
+  { id: "demo-brand-system", title: "Elite Brand Strategy System", category: "ChatGPT", creator: "Noor Atlas", image: "/assets/img/18.jpg", prompt: "Act as a senior brand strategist and creative director. Build a premium positioning system for a futuristic AI startup with audience psychology, visual language, offer ladder, and homepage messaging.", tags: ["strategy", "startup", "system"], likes: 846, liked: false, saved: false, trending: false },
+  { id: "demo-vertical-city", title: "Rainlit Vertical City", category: "Stable Diffusion", creator: "Kenji Frame", image: "/assets/img/38.jpg", prompt: "A massive vertical city at night after rain, reflective black streets, white holographic signage, cinematic fog layers, futuristic minimal architecture, elegant cyberpunk realism.", tags: ["city", "cyberpunk", "rain"], likes: 1532, liked: false, saved: false, trending: true },
+  { id: "demo-grok-saas", title: "Viral AI Tool Ideas", category: "Grok", creator: "Isha Vector", image: "/assets/img/39.jpg", prompt: "Generate 25 commercially realistic AI micro-SaaS ideas for solo builders. Include target user, pain, MVP, pricing angle, and viral demo hook.", tags: ["ideas", "saas", "builder"], likes: 621, liked: false, saved: false, trending: false },
+  { id: "demo-luxury-interior", title: "Silent Luxury Interior", category: "Flux", creator: "Elena Darkroom", image: "/assets/img/40.jpg", prompt: "A silent luxury penthouse interior at blue hour, black stone, warm indirect light, sculptural furniture, futuristic skyline, museum-grade minimalism, editorial realism.", tags: ["interior", "luxury", "calm"], likes: 1198, liked: false, saved: false, trending: true }
 ];
 
 function readStoredSet(key) {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
-  } catch (_error) {
-    return new Set();
-  }
+  try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+  catch (_error) { return new Set(); }
 }
 
 function writeStoredSet(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify([...value]));
-  } catch (_error) {
-    // Non-critical: interaction state can degrade without persistence.
-  }
+  try { localStorage.setItem(key, JSON.stringify([...value])); }
+  catch (_error) { /* Non-critical: interaction state can degrade without persistence. */ }
 }
 
 const HYDROZEN = {
-  page: 1,
-perPage: 24,
   supabase: null,
   session: null,
   prompts: [],
   category: "All",
   query: "",
+  visibleCount: 24,
   realtimeChannel: null,
   loadRequestId: 0,
-  localSaved: readStoredSet("hydrozen:saved"),
-  localLiked: readStoredSet("hydrozen:liked")
+  localSaved: readStoredSet("hydrozen"),
+  localLiked: readStoredSet("hydrozen")
 };
 
 const uiSelectors = {
@@ -139,23 +60,16 @@ const uiSelectors = {
 const FALLBACK_IMAGE = "/assets/img/18.jpg";
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const LOAD_MORE_STEP = 24;
 
 function safeQuery(selector, root = document) {
   if (!selector || !root?.querySelector) return null;
-  try {
-    return root.querySelector(selector);
-  } catch (_error) {
-    return null;
-  }
+  try { return root.querySelector(selector); } catch (_error) { return null; }
 }
 
 function safeQueryAll(selector, root = document) {
   if (!selector || !root?.querySelectorAll) return [];
-  try {
-    return [...root.querySelectorAll(selector)];
-  } catch (_error) {
-    return [];
-  }
+  try { return [...root.querySelectorAll(selector)]; } catch (_error) { return []; }
 }
 
 function safeBind(element, event, handler, options) {
@@ -172,45 +86,29 @@ function safeBind(element, event, handler, options) {
 }
 
 function safeRun(label, task) {
-  try {
-    return task();
-  } catch (error) {
-    console.error(`[HYDROZEN:${label}]`, error);
-    return null;
-  }
+  try { return task(); } catch (error) { console.error(`[HYDROZEN:${label}]`, error); return null; }
 }
 
 async function safeRunAsync(label, task) {
-  try {
-    return await task();
-  } catch (error) {
-    console.error(`[HYDROZEN:${label}]`, error);
-    return null;
-  }
+  try { return await task(); } catch (error) { console.error(`[HYDROZEN:${label}]`, error); return null; }
 }
 
-const ui = new Proxy({}, {
-  get(_target, key) {
-    return safeQuery(uiSelectors[key]);
-  }
-});
+const ui = new Proxy({}, { get(_target, key) { return safeQuery(uiSelectors[key]); } });
 
 const $ = safeQuery;
 const $$ = safeQueryAll;
 
 function getSupabaseConfig() {
   const env = window.HYDROZEN_ENV || {};
-  return {
-    url: env.SUPABASE_URL || "",
-    anonKey: env.SUPABASE_ANON_KEY || ""
-  };
+  return { url: env.SUPABASE_URL || "", anonKey: env.SUPABASE_ANON_KEY || "" };
 }
+
 const imageViewer = $("#imageViewer");
 const viewerImg = $("#viewerImg");
 const viewerBack = $("#viewerBack");
+
 function waitForSupabaseClient(timeout = 2500) {
   if (window.supabase?.createClient) return Promise.resolve(true);
-
   return new Promise(resolve => {
     const started = Date.now();
     const timer = window.setInterval(() => {
@@ -219,7 +117,6 @@ function waitForSupabaseClient(timeout = 2500) {
         resolve(true);
         return;
       }
-
       if (Date.now() - started >= timeout) {
         window.clearInterval(timer);
         resolve(false);
@@ -238,23 +135,14 @@ async function initSupabase() {
   }
 
   HYDROZEN.supabase = window.supabase.createClient(config.url, config.anonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    },
-    realtime: {
-      params: { eventsPerSecond: 8 }
-    }
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    realtime: { params: { eventsPerSecond: 8 } }
   });
   setStatus("Supabase", "Connected");
 }
 
 async function initAuth() {
-  if (!HYDROZEN.supabase) {
-    renderAuth();
-    return;
-  }
+  if (!HYDROZEN.supabase) { renderAuth(); return; }
 
   const { data } = await HYDROZEN.supabase.auth.getSession();
   HYDROZEN.session = data.session;
@@ -292,46 +180,26 @@ function normalizePromptRow(row, likedIds = new Set(), savedIds = new Set()) {
 }
 
 async function fetchPromptRows() {
-  const viewResult = await HYDROZEN.supabase
-    .from("prompts_with_counts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .range(
-    (HYDROZEN.page-1)*HYDROZEN.perPage,
-    HYDROZEN.page*HYDROZEN.perPage-1
-)
+  const viewResult = await HYDROZEN.supabase.from("prompts_with_counts").select("*").order("created_at", { ascending: false }).limit(5000);
 
   if (!viewResult.error) return viewResult.data || [];
 
-  console.warn("[HYDROZEN:supabase-view]", viewResult.error.message);
+  console.warn("[HYDROZEN]", viewResult.error.message);
   setStatus("Supabase", "Using prompts table fallback");
 
-  const tableResult = await HYDROZEN.supabase
-    .from("prompts")
-    .select("id,user_id,title,category,prompt,tags,image_url,created_at,updated_at")
-    .order("created_at", { ascending: false })
-    .limit(5000);
+  const tableResult = await HYDROZEN.supabase.from("prompts").select("id,user_id,title,category,prompt,tags,image_url,created_at,updated_at").order("created_at", { ascending: false }).limit(5000);
 
   if (tableResult.error) throw tableResult.error;
 
   const rows = tableResult.data || [];
   if (!rows.length) return [];
 
-  const { data: likes } = await HYDROZEN.supabase
-    .from("prompt_likes")
-    .select("prompt_id");
+  const { data: likes } = await HYDROZEN.supabase.from("prompt_likes").select("prompt_id");
 
   const likeCounts = new Map();
-  (likes || []).forEach(item => {
-    likeCounts.set(item.prompt_id, (likeCounts.get(item.prompt_id) || 0) + 1);
-  });
+  (likes || []).forEach(item => { likeCounts.set(item.prompt_id, (likeCounts.get(item.prompt_id) || 0) + 1); });
 
-  return rows.map(row => ({
-    ...row,
-    creator_name: "Hydrozen Creator",
-    like_count: likeCounts.get(row.id) || 0,
-    bookmark_count: 0
-  }));
+  return rows.map(row => ({ ...row, creator_name: "Hydrozen Creator", like_count: likeCounts.get(row.id) || 0, bookmark_count: 0 }));
 }
 
 function makeAssetUrl(src) {
@@ -339,25 +207,9 @@ function makeAssetUrl(src) {
   return String(src);
 }
 
-function getThumbnailUrl(url, width = 500) {
-  if (!url) return FALLBACK_IMAGE;
-
-  // Only transform Supabase images
-  if (!url.includes("/storage/v1/object/public/")) {
-    return url;
-  }
-
-  return url.replace(
-    "/storage/v1/object/public/",
-    "/storage/v1/render/image/public/"
-  ) + `?width=${width}&quality=75`;
-}
 function setImageFallback(image) {
   if (!image) return;
-  image.onerror = () => {
-    image.onerror = null;
-    image.src = FALLBACK_IMAGE;
-  };
+  image.onerror = () => { image.onerror = null; image.src = FALLBACK_IMAGE; };
 }
 
 async function writeClipboard(text) {
@@ -365,7 +217,6 @@ async function writeClipboard(text) {
     await navigator.clipboard.writeText(text);
     return true;
   }
-
   const textarea = document.createElement("textarea");
   textarea.value = text;
   textarea.setAttribute("readonly", "");
@@ -394,15 +245,8 @@ function renderAuth() {
 }
 
 async function loginWithGoogle() {
-  if (!HYDROZEN.supabase) {
-    notify("Connect Supabase env vars first.", true);
-    return;
-  }
-
-  const { error } = await HYDROZEN.supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: window.location.origin }
-  });
+  if (!HYDROZEN.supabase) { notify("Connect Supabase env vars first.", true); return; }
+  const { error } = await HYDROZEN.supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
   if (error) notify(error.message, true);
 }
 
@@ -424,9 +268,7 @@ async function loadPrompts() {
     renderPrompts();
   }
 
-  if (!HYDROZEN.supabase) {
-    return;
-  }
+  if (!HYDROZEN.supabase) return;
 
   try {
     const userId = currentUserId();
@@ -457,6 +299,7 @@ async function loadPrompts() {
       }));
     }
     renderPrompts();
+
   } catch (error) {
     console.error(error);
     setStatus("Fallback", "Supabase read failed");
@@ -479,6 +322,29 @@ function renderSkeleton() {
   if (ui.resultCount) ui.resultCount.textContent = "Loading prompts";
 }
 
+/* --- Load More: renders/updates the button placed right after the grid --- */
+function renderLoadMoreButton(totalCount) {
+  const grid = ui.grid;
+  if (!grid) return;
+
+  let wrapper = document.getElementById("loadMoreWrapper");
+  if (!wrapper) {
+    wrapper = document.createElement("div");
+    wrapper.id = "loadMoreWrapper";
+    wrapper.style.textAlign = "center";
+    wrapper.style.marginTop = "24px";
+    wrapper.innerHTML = '<button type="button" id="loadMoreButton" class="card-action">Load More</button>';
+    grid.insertAdjacentElement("afterend", wrapper);
+    safeBind(document.getElementById("loadMoreButton"), "click", () => {
+      HYDROZEN.visibleCount += LOAD_MORE_STEP;
+      renderPrompts();
+    });
+  }
+
+  const button = document.getElementById("loadMoreButton");
+  if (button) button.hidden = HYDROZEN.visibleCount >= totalCount;
+}
+
 function filteredPrompts() {
   const query = HYDROZEN.query.toLowerCase();
   return HYDROZEN.prompts.filter(prompt => {
@@ -492,32 +358,28 @@ function renderPrompts() {
   const grid = ui.grid;
   if (!grid) return;
 
-const allPrompts = filteredPrompts();
-
-const prompts = allPrompts.slice(
-    0,
-    HYDROZEN.page * HYDROZEN.perPage
-);  grid.classList.remove("skeleton-grid");
+  const prompts = filteredPrompts();
+  grid.classList.remove("skeleton-grid");
   grid.innerHTML = "";
   if (ui.totalPrompts) ui.totalPrompts.textContent = HYDROZEN.prompts.length;
   if (ui.savedCount) ui.savedCount.textContent = HYDROZEN.prompts.filter(prompt => prompt.saved).length + HYDROZEN.localSaved.size;
-  if (ui.resultCount) ui.resultCount.textContent =
-`Showing ${prompts.length} of ${allPrompts.length} prompts`;
+  if (ui.resultCount) ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
 
   if (!prompts.length) {
     grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
+    renderLoadMoreButton(0);
     return;
   }
 
-  prompts.forEach(prompt => {
-    
+  const visiblePrompts = prompts.slice(0, HYDROZEN.visibleCount);
+  visiblePrompts.forEach(prompt => {
     const card = document.createElement("article");
     card.className = "prompt-card";
     card.tabIndex = 0;
     card.dataset.cardOpen = prompt.id;
     card.innerHTML = `
       <div class="card-media">
-        <img src="${escapeHtml(getThumbnailUrl(prompt.image, 500))}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
+        <img src="${escapeHtml(makeAssetUrl(prompt.image))}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
         ${prompt.trending ? '<span class="trending-badge">Trending</span>' : ""}
         <button class="save-button ${prompt.saved ? "is-saved" : ""}" type="button" data-save="${prompt.id}">${prompt.saved ? "Saved" : "Save"}</button>
       </div>
@@ -536,68 +398,23 @@ const prompts = allPrompts.slice(
         </div>
       </div>
     `;
-    safeBind(card, "keydown", event => {
-      if (event.key === "Enter") openModal(prompt.id);
-    });
+    safeBind(card, "keydown", event => { if (event.key === "Enter") openModal(prompt.id); });
     setImageFallback(card.querySelector("img"));
     grid.append(card);
   });
+
+  renderLoadMoreButton(prompts.length);
 }
-const oldButton = document.querySelector("#loadMore");
-if (oldButton) oldButton.remove();
-
-if (prompts.length < allPrompts.length) {
-
-    const button = document.createElement("button");
-
-    button.id = "loadMore";
-
-    button.className = "submit-button";
-
-    button.textContent = "Load More";
-
-    button.onclick = () => {
-
-        HYDROZEN.page++;
-
-        renderPrompts();
-
-    };
-
-    grid.after(button);
-
-}
-if (modalImage) {
-
-   modalImage.src = getThumbnailUrl(prompt.image, 1200);
-    modalImage.alt = `${prompt.title} preview`;
-    setImageFallback(modalImage);
-
-}
-modalImage.onclick = () => {
-
-    viewerImg.src = modalImage.src;
-
-    imageViewer.hidden = false;
-
-};
 
 async function uploadImage(file) {
   if (!file) return "/assets/img/44.jpg";
-  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-    throw new Error("Upload a JPG, PNG, WebP, or GIF image.");
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Image must be smaller than 5 MB.");
-  }
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) throw new Error("Upload a JPG, PNG, WebP, or GIF image.");
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error("Image must be smaller than 5 MB.");
   if (!HYDROZEN.supabase || !HYDROZEN.session?.user) return readLocalImage(file);
 
   const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `${HYDROZEN.session.user.id}/${createObjectId()}.${ext}`;
-  const { error } = await HYDROZEN.supabase.storage.from("prompt-images").upload(path, file, {
-    cacheControl: "31536000",
-    upsert: false
-  });
+  const { error } = await HYDROZEN.supabase.storage.from("prompt-images").upload(path, file, { cacheControl: "31536000", upsert: false });
   if (error) throw error;
 
   const { data } = HYDROZEN.supabase.storage.from("prompt-images").getPublicUrl(path);
@@ -663,6 +480,7 @@ async function submitPrompt(event) {
     formElement.reset();
     resetImagePreview();
     await loadPrompts();
+
   } catch (error) {
     notify(error.message, true);
   } finally {
@@ -679,7 +497,7 @@ async function toggleLike(id) {
     prompt.liked = !prompt.liked;
     prompt.likes = Math.max(0, prompt.likes + (prompt.liked ? 1 : -1));
     prompt.liked ? HYDROZEN.localLiked.add(id) : HYDROZEN.localLiked.delete(id);
-    writeStoredSet("hydrozen:liked", HYDROZEN.localLiked);
+    writeStoredSet("hydrozen", HYDROZEN.localLiked);
     renderPrompts();
     return;
   }
@@ -689,9 +507,7 @@ async function toggleLike(id) {
       const { error } = await HYDROZEN.supabase.from("prompt_likes").delete().eq("prompt_id", id).eq("user_id", userId);
       if (error) throw error;
     } else {
-      const { error } = await HYDROZEN.supabase
-        .from("prompt_likes")
-        .upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
+      const { error } = await HYDROZEN.supabase.from("prompt_likes").upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
       if (error) throw error;
     }
     await loadPrompts();
@@ -708,7 +524,7 @@ async function toggleSave(id) {
   if (!HYDROZEN.supabase || !userId || id.startsWith("demo")) {
     prompt.saved = !prompt.saved;
     prompt.saved ? HYDROZEN.localSaved.add(id) : HYDROZEN.localSaved.delete(id);
-    writeStoredSet("hydrozen:saved", HYDROZEN.localSaved);
+    writeStoredSet("hydrozen", HYDROZEN.localSaved);
     renderPrompts();
     return;
   }
@@ -718,9 +534,7 @@ async function toggleSave(id) {
       const { error } = await HYDROZEN.supabase.from("prompt_bookmarks").delete().eq("prompt_id", id).eq("user_id", userId);
       if (error) throw error;
     } else {
-      const { error } = await HYDROZEN.supabase
-        .from("prompt_bookmarks")
-        .upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
+      const { error } = await HYDROZEN.supabase.from("prompt_bookmarks").upsert({ prompt_id: id, user_id: userId }, { onConflict: "prompt_id,user_id" });
       if (error) throw error;
     }
     await loadPrompts();
@@ -747,30 +561,31 @@ function openModal(id) {
   if (!modal) return;
 
   HYDROZEN.activePrompt = prompt;
- const modalImage = $("#modalImage");
-if (modalImage) {
-  modalImage.src = makeAssetUrl(prompt.image);
-  modalImage.alt = `${prompt.title} preview`;
-  setImageFallback(modalImage);
+  const modalImage = $("#modalImage");
+  if (modalImage) {
+    modalImage.src = makeAssetUrl(prompt.image);
+    modalImage.alt = `${prompt.title} preview`;
+    setImageFallback(modalImage);
 
-  // Remove previous click listener
-  modalImage.onclick = null;
+    // Remove previous click listener
+    modalImage.onclick = null;
 
-  // Open fullscreen on click
-  modalImage.onclick = async () => {
-    try {
-      if (modalImage.requestFullscreen) {
-        await modalImage.requestFullscreen();
-      } else if (modalImage.webkitRequestFullscreen) {
-        modalImage.webkitRequestFullscreen();
-      } else if (modalImage.msRequestFullscreen) {
-        modalImage.msRequestFullscreen();
+    // Open fullscreen on click
+    modalImage.onclick = async () => {
+      try {
+        if (modalImage.requestFullscreen) {
+          await modalImage.requestFullscreen();
+        } else if (modalImage.webkitRequestFullscreen) {
+          modalImage.webkitRequestFullscreen();
+        } else if (modalImage.msRequestFullscreen) {
+          modalImage.msRequestFullscreen();
+        }
+      } catch (e) {
+        console.log(e);
       }
-    } catch (e) {
-      console.log(e);
-    }
-  };
-}
+    };
+  }
+
   if ($("#modalCategory")) $("#modalCategory").textContent = prompt.category;
   if ($("#modalLikes")) $("#modalLikes").textContent = `${formatLikes(prompt.likes)} likes`;
   if ($("#modalTitle")) $("#modalTitle").textContent = prompt.title;
@@ -799,10 +614,7 @@ async function copyPrompt(id, button) {
   const prompt = HYDROZEN.prompts.find(item => item.id === id) || HYDROZEN.activePrompt;
   if (!prompt) return;
   const copied = await writeClipboard(prompt.prompt);
-  if (!copied) {
-    notify("Copy is blocked in this browser. Select the prompt manually.", true);
-    return;
-  }
+  if (!copied) { notify("Copy is blocked in this browser. Select the prompt manually.", true); return; }
   if (!button) return;
   const original = button.textContent;
   button.textContent = "Copied";
@@ -867,7 +679,7 @@ function formatLikes(value) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
+  return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 }
 
 function initReveal() {
@@ -875,7 +687,6 @@ function initReveal() {
     $$(".reveal").forEach(element => element.classList.add("is-visible"));
     return;
   }
-
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -909,30 +720,36 @@ function bindEvents() {
 
   safeBind(ui.googleLogin, "click", loginWithGoogle);
   safeBind(ui.logoutButton, "click", logout);
+
   safeBind(ui.search, "input", event => {
     HYDROZEN.query = event.target.value.trim();
-    HYDROZEN.page = 1;
+    HYDROZEN.visibleCount = LOAD_MORE_STEP;
     renderPrompts();
   });
+
   safeBind($("#heroSearchForm"), "submit", event => {
     event.preventDefault();
     $("#explore")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+
   $$(".filter-pill").forEach(button => {
     safeBind(button, "click", () => {
       HYDROZEN.category = button.dataset.category;
-      HYDROZEN.page = 1;
+      HYDROZEN.visibleCount = LOAD_MORE_STEP;
       $$(".filter-pill").forEach(item => item.classList.toggle("active", item === button));
       renderPrompts();
     });
   });
+
   safeBind(ui.resetFilters, "click", () => {
     HYDROZEN.category = "All";
     HYDROZEN.query = "";
+    HYDROZEN.visibleCount = LOAD_MORE_STEP;
     if (ui.search) ui.search.value = "";
     $$(".filter-pill").forEach(button => button.classList.toggle("active", button.dataset.category === "All"));
     renderPrompts();
   });
+
   safeBind(ui.grid, "click", event => {
     const target = event.target;
     if (!target?.closest) return;
@@ -947,59 +764,59 @@ function bindEvents() {
     else if (openButton) openModal(openButton.dataset.open);
     else if (cardButton) openModal(cardButton.dataset.cardOpen);
   });
+
   safeBind(ui.modal, "click", event => {
     if (event.target?.matches?.("[data-close-modal]")) closeModal();
   });
+
   safeBind(window, "keydown", event => {
     if (event.key === "Escape" && ui.modal && !ui.modal.hidden) closeModal();
   });
+
   safeBind($("#modalLike"), "click", async () => {
     if (!HYDROZEN.activePrompt?.id) return;
     await toggleLike(HYDROZEN.activePrompt.id);
     const refreshed = HYDROZEN.prompts.find(item => item.id === HYDROZEN.activePrompt.id);
     if (refreshed) openModal(refreshed.id);
   });
+
   safeBind($("#modalSave"), "click", async () => {
     if (!HYDROZEN.activePrompt?.id) return;
     await toggleSave(HYDROZEN.activePrompt.id);
     const refreshed = HYDROZEN.prompts.find(item => item.id === HYDROZEN.activePrompt.id);
     if (refreshed) openModal(refreshed.id);
   });
+
   safeBind($("#modalCopy"), "click", event => copyPrompt(HYDROZEN.activePrompt?.id, event.currentTarget));
   safeBind($("#modalShare"), "click", sharePrompt);
   safeBind($("#modalDownload"), "click", downloadPrompt);
+
   safeBind(ui.imageUpload, "change", event => handleImagePreview(event.target.files?.[0]));
   safeBind(ui.uploadDrop, "dragover", event => event.preventDefault());
   safeBind(ui.uploadDrop, "drop", event => {
     event.preventDefault();
     handleImagePreview(event.dataTransfer?.files?.[0]);
   });
+
   safeBind(window, "keydown", event => {
-
-    if (event.key === "Escape"){
-
-        if(!imageViewer.hidden){
-
-            imageViewer.hidden=true;
-            return;
-
-        }
-
-        if(ui.modal && !ui.modal.hidden){
-
-            closeModal();
-
-        }
-
+    if (event.key === "Escape") {
+      if (imageViewer && !imageViewer.hidden) {
+        imageViewer.hidden = true;
+        return;
+      }
+      if (ui.modal && !ui.modal.hidden) {
+        closeModal();
+      }
     }
+  });
 
-});
-  
   safeBind(ui.uploadForm, "submit", submitPrompt);
+
   safeBind(ui.mobileSearch, "click", () => {
     $("#home")?.scrollIntoView({ behavior: "smooth", block: "start" });
     setTimeout(() => ui.search?.focus(), 350);
   });
+
   safeBind(ui.mobileAccount, "click", () => {
     if (HYDROZEN.session?.user) {
       $("#upload")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1007,14 +824,13 @@ function bindEvents() {
       loginWithGoogle();
     }
   });
+
   safeBind(viewerBack, "click", () => {
+    if (imageViewer) imageViewer.hidden = true;
+  });
 
-    imageViewer.hidden = true;
-
-});
   if ($("#year")) $("#year").textContent = new Date().getFullYear();
 }
-
 
 async function boot() {
   safeRun("bind-events", bindEvents);
@@ -1025,6 +841,7 @@ async function boot() {
   await safeRunAsync("prompts", loadPrompts);
   ui.loader?.classList.add("is-hidden");
 }
+
 // Navbar links with data-nav-category auto-select that filter pill
 document.querySelectorAll("[data-nav-category]").forEach(link => {
   link.addEventListener("click", () => {
@@ -1033,6 +850,7 @@ document.querySelectorAll("[data-nav-category]").forEach(link => {
     if (pill) pill.click();
   });
 });
+
 if (document.readyState === "loading") {
   safeBind(document, "DOMContentLoaded", boot);
 } else {
