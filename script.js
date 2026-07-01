@@ -96,6 +96,8 @@ function writeStoredSet(key, value) {
 }
 
 const HYDROZEN = {
+  page: 1,
+perPage: 24,
   supabase: null,
   session: null,
   prompts: [],
@@ -294,7 +296,10 @@ async function fetchPromptRows() {
     .from("prompts_with_counts")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(5000);
+    .range(
+    (HYDROZEN.page-1)*HYDROZEN.perPage,
+    HYDROZEN.page*HYDROZEN.perPage-1
+)
 
   if (!viewResult.error) return viewResult.data || [];
 
@@ -334,6 +339,19 @@ function makeAssetUrl(src) {
   return String(src);
 }
 
+function getThumbnailUrl(url, width = 500) {
+  if (!url) return FALLBACK_IMAGE;
+
+  // Only transform Supabase images
+  if (!url.includes("/storage/v1/object/public/")) {
+    return url;
+  }
+
+  return url.replace(
+    "/storage/v1/object/public/",
+    "/storage/v1/render/image/public/"
+  ) + `?width=${width}&quality=75`;
+}
 function setImageFallback(image) {
   if (!image) return;
   image.onerror = () => {
@@ -474,12 +492,17 @@ function renderPrompts() {
   const grid = ui.grid;
   if (!grid) return;
 
-  const prompts = filteredPrompts();
-  grid.classList.remove("skeleton-grid");
+const allPrompts = filteredPrompts();
+
+const prompts = allPrompts.slice(
+    0,
+    HYDROZEN.page * HYDROZEN.perPage
+);  grid.classList.remove("skeleton-grid");
   grid.innerHTML = "";
   if (ui.totalPrompts) ui.totalPrompts.textContent = HYDROZEN.prompts.length;
   if (ui.savedCount) ui.savedCount.textContent = HYDROZEN.prompts.filter(prompt => prompt.saved).length + HYDROZEN.localSaved.size;
-  if (ui.resultCount) ui.resultCount.textContent = prompts.length === 1 ? "1 prompt found" : `${prompts.length} prompts found`;
+  if (ui.resultCount) ui.resultCount.textContent =
+`Showing ${prompts.length} of ${allPrompts.length} prompts`;
 
   if (!prompts.length) {
     grid.innerHTML = '<div class="empty-state"><div><h3>No matching prompt found.</h3><p>Try another keyword or reset filters.</p></div></div>';
@@ -487,13 +510,14 @@ function renderPrompts() {
   }
 
   prompts.forEach(prompt => {
+    
     const card = document.createElement("article");
     card.className = "prompt-card";
     card.tabIndex = 0;
     card.dataset.cardOpen = prompt.id;
     card.innerHTML = `
       <div class="card-media">
-        <img src="${escapeHtml(makeAssetUrl(prompt.image))}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
+        <img src="${escapeHtml(getThumbnailUrl(prompt.image, 500))}" alt="${escapeHtml(prompt.title)} preview" loading="lazy" decoding="async">
         ${prompt.trending ? '<span class="trending-badge">Trending</span>' : ""}
         <button class="save-button ${prompt.saved ? "is-saved" : ""}" type="button" data-save="${prompt.id}">${prompt.saved ? "Saved" : "Save"}</button>
       </div>
@@ -519,9 +543,33 @@ function renderPrompts() {
     grid.append(card);
   });
 }
+const oldButton = document.querySelector("#loadMore");
+if (oldButton) oldButton.remove();
+
+if (prompts.length < allPrompts.length) {
+
+    const button = document.createElement("button");
+
+    button.id = "loadMore";
+
+    button.className = "submit-button";
+
+    button.textContent = "Load More";
+
+    button.onclick = () => {
+
+        HYDROZEN.page++;
+
+        renderPrompts();
+
+    };
+
+    grid.after(button);
+
+}
 if (modalImage) {
 
-    modalImage.src = makeAssetUrl(prompt.image);
+   modalImage.src = getThumbnailUrl(prompt.image, 1200);
     modalImage.alt = `${prompt.title} preview`;
     setImageFallback(modalImage);
 
@@ -863,6 +911,7 @@ function bindEvents() {
   safeBind(ui.logoutButton, "click", logout);
   safeBind(ui.search, "input", event => {
     HYDROZEN.query = event.target.value.trim();
+    HYDROZEN.page = 1;
     renderPrompts();
   });
   safeBind($("#heroSearchForm"), "submit", event => {
@@ -872,6 +921,7 @@ function bindEvents() {
   $$(".filter-pill").forEach(button => {
     safeBind(button, "click", () => {
       HYDROZEN.category = button.dataset.category;
+      HYDROZEN.page = 1;
       $$(".filter-pill").forEach(item => item.classList.toggle("active", item === button));
       renderPrompts();
     });
