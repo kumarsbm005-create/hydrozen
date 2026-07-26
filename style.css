@@ -2408,401 +2408,10 @@ transition: transform .2s ease;
     cursor:pointer;
 
 }
-
-
-
-
 /* =========================================================
-   HYDROZEN — MOBILE PROMPT DETAIL REDESIGN
-   Applies ONLY when a prompt is opened on mobile.
-   
-   Homepage cards: UNCHANGED
-   Desktop prompt modal: UNCHANGED
-   ========================================================= */
-
-@media (max-width: 768px) {
-
-  /* =========================================
-     FULL SCREEN MODAL
-     ========================================= */
-
-  #promptModal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-
-    width: 100%;
-    height: 100dvh;
-
-    padding: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background: #06171b;
-  }
-
-
-  /* =========================================
-     BACKDROP
-     ========================================= */
-
-  #promptModal .modal-backdrop {
-    display: none;
-  }
-
-
-  /* =========================================
-     MODAL CARD
-     ========================================= */
-
-  #promptModal .modal-card {
-    position: relative;
-
-    width: 100%;
-    min-height: 100dvh;
-
-    display: flex;
-    flex-direction: column;
-
-    margin: 0;
-
-    overflow: hidden;
-
-    border: none;
-    border-radius: 0;
-
-    background: #06171b;
-
-    box-shadow: none;
-  }
-
-
-  /* =========================================
-     IMAGE
-     ========================================= */
-
-  #promptModal .modal-image {
-    position: relative;
-
-    width: 100%;
-    height: 58dvh;
-    min-height: 390px;
-
-    overflow: hidden;
-
-    background: #080b0d;
-  }
-
-  #promptModal #modalImage {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-
-    cursor: zoom-in;
-  }
-
-
-  /* =========================================
-     IMAGE GRADIENT
-     ========================================= */
-
-  #promptModal .modal-image::after {
-    content: "";
-
-    position: absolute;
-    inset: 0;
-
-    pointer-events: none;
-
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.20) 0%,
-      transparent 35%,
-      transparent 65%,
-      rgba(0, 0, 0, 0.70) 100%
-    );
-  }
-
-
-  /* =========================================
-     CLOSE BUTTON
-     ========================================= */
-
-  #promptModal .modal-close {
-    position: absolute;
-
-    top: 14px;
-    left: 14px;
-
-    z-index: 20;
-
-    width: 38px;
-    height: 38px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 50%;
-
-    color: #fff;
-
-    background: rgba(0,0,0,0.45);
-
-    font-size: 15px;
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-
-
-  /* =========================================
-     CONTENT
-     ========================================= */
-
-  #promptModal .modal-content {
-    position: relative;
-    z-index: 5;
-
-    width: 100%;
-
-    padding: 14px 14px 100px;
-
-    background: #06171b;
-  }
-
-
-  /* =========================================
-     CATEGORY + LIKES
-     ========================================= */
-
-  #promptModal .modal-kicker {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    margin-bottom: 8px;
-  }
-
-  #promptModal #modalCategory {
-    padding: 4px 7px;
-
-    border-radius: 4px;
-
-    color: #d8eeee;
-
-    background: rgba(159,216,209,0.10);
-
-    font-size: 7px;
-    font-weight: 800;
-
-    text-transform: uppercase;
-  }
-
-  #promptModal #modalLikes {
-    color: rgba(220,235,235,0.55);
-
-    font-size: 9px;
-  }
-
-
-  /* =========================================
-     TITLE
-     ========================================= */
-
-  #promptModal #modalTitle {
-    margin: 0 0 4px;
-
-    color: #f2f7f7;
-
-    font-size: 20px;
-    line-height: 1.2;
-    font-weight: 800;
-
-    letter-spacing: -0.025em;
-  }
-
-
-  /* =========================================
-     CREATOR
-     ========================================= */
-
-  #promptModal #modalCreator {
-    margin: 0 0 12px;
-
-    color: rgba(220,235,235,0.48);
-
-    font-size: 10px;
-  }
-
-
-  /* =========================================
-     TAGS
-     ========================================= */
-
-  #promptModal .modal-tags {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 6px;
-
-    margin-bottom: 12px;
-
-    overflow-x: auto;
-
-    scrollbar-width: none;
-  }
-
-  #promptModal .modal-tags::-webkit-scrollbar {
-    display: none;
-  }
-
-  #promptModal .modal-tags span {
-    flex: 0 0 auto;
-
-    padding: 5px 9px;
-
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 999px;
-
-    color: rgba(230,240,240,0.65);
-
-    background: rgba(255,255,255,0.035);
-
-    font-size: 9px;
-  }
-
-
-  /* =========================================
-     PROMPT TEXT
-     ========================================= */
-
-  #promptModal #modalPrompt {
-    width: 100%;
-
-    margin: 0 0 14px;
-    padding: 13px;
-
-    overflow-x: auto;
-
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px;
-
-    color: rgba(230,240,240,0.75);
-
-    background: rgba(255,255,255,0.025);
-
-    font-family: inherit;
-
-    font-size: 11px;
-    line-height: 1.55;
-
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-
-  /* =========================================
-     ACTION BUTTONS
-     
-     Like / Save / Copy / Share / Download
-     ========================================= */
-
-  #promptModal .modal-actions {
-    display: grid;
-
-    grid-template-columns: repeat(4, 1fr);
-
-    gap: 6px;
-
-    margin: 0;
-  }
-
-  #promptModal .modal-actions button {
-    min-height: 40px;
-
-    padding: 0 5px;
-
-    border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 999px;
-
-    color: #e7eeee;
-
-    background: rgba(255,255,255,0.045);
-
-    font-size: 9px;
-    font-weight: 700;
-  }
-
-  #promptModal .modal-actions button:active {
-    transform: scale(0.96);
-  }
-
-
-  /* =========================================
-     DOWNLOAD BUTTON
-     
-     Place it on second row
-     ========================================= */
-
-  #promptModal #modalDownload {
-    grid-column: 1 / -1;
-
-    min-height: 40px;
-
-    color: rgba(230,240,240,0.70);
-
-    background: rgba(255,255,255,0.025);
-  }
-
-}
-
-
-/* =========================================================
-   SMALL PHONES
-   ========================================================= */
-
-@media (max-width: 480px) {
-
-  #promptModal .modal-image {
-    height: 56dvh;
-    min-height: 360px;
-  }
-
-  #promptModal .modal-content {
-    padding: 13px 12px 90px;
-  }
-
-  #promptModal #modalTitle {
-    font-size: 18px;
-  }
-
-  #promptModal #modalPrompt {
-    font-size: 11px;
-  }
-
-  #promptModal .modal-actions {
-    gap: 5px;
-  }
-
-  #promptModal .modal-actions button {
-    min-height: 38px;
-    font-size: 8px;
-  }
-
-}
-/* =========================================================
-   HYDROZEN — PREMIUM MOBILE PROMPT DETAIL UI
-   ---------------------------------------------------------
-   ONLY affects mobile prompt detail modal.
-   Homepage cards: unchanged.
-   Desktop: unchanged.
+   HYDROZEN — PREMIUM MOBILE PROMPT VIEW
+   Mobile prompt detail only
+   Homepage + Desktop remain unchanged
    ========================================================= */
 
 @media (max-width: 768px) {
@@ -2827,15 +2436,13 @@ transition: transform .2s ease;
     background: var(--bg);
   }
 
-
-  /* Hide modal backdrop on mobile */
   #promptModal .modal-backdrop {
     display: none;
   }
 
 
   /* =======================================================
-     MODAL CARD
+     MAIN CARD
      ======================================================= */
 
   #promptModal .modal-card {
@@ -2861,924 +2468,15 @@ transition: transform .2s ease;
 
 
   /* =======================================================
-     HERO IMAGE
+     IMAGE HERO
      ======================================================= */
-
-  #promptModal .modal-image {
-    position: relative;
-
-    width: 100%;
-
-    /*
-      More immersive image.
-      Reduces the empty space from your current screenshot.
-    */
-    height: 62dvh;
-    min-height: 420px;
-
-    overflow: hidden;
-
-    background: var(--bg-2);
-  }
-
-
-  #promptModal #modalImage {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-
-    cursor: zoom-in;
-  }
-
-
-  /* =======================================================
-     IMAGE GRADIENT
-     ======================================================= */
-
-  #promptModal .modal-image::after {
-    content: "";
-
-    position: absolute;
-    inset: 0;
-
-    pointer-events: none;
-
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.18) 0%,
-      transparent 35%,
-      transparent 72%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-
-
-  /* =======================================================
-     CLOSE BUTTON
-     ======================================================= */
-
-  #promptModal .modal-close {
-    position: absolute;
-
-    top: 14px;
-    left: 14px;
-
-    z-index: 20;
-
-    width: 38px;
-    height: 38px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    border: 1px solid var(--line);
-    border-radius: 50%;
-
-    color: var(--text);
-
-    background: rgba(8, 9, 11, 0.55);
-
-    font-size: 14px;
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    transition:
-      background 180ms ease,
-      transform 180ms ease;
-  }
-
-
-  #promptModal .modal-close:active {
-    transform: scale(0.92);
-
-    background: var(--surface-2);
-  }
-
-
-  /* =======================================================
-     CONTENT AREA
-     ======================================================= */
-
-  #promptModal .modal-content {
-    position: relative;
-    z-index: 5;
-
-    width: 100%;
-
-    padding: 14px 16px 110px;
-
-    background: var(--bg);
-  }
-
-
-  /* =======================================================
-     META
-     CHATGPT · 0 LIKES
-     ======================================================= */
-
-  #promptModal .modal-kicker {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    margin-bottom: 9px;
-  }
-
-
-  #promptModal #modalCategory {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 5px 8px;
-
-    border: 1px solid rgba(159, 216, 209, 0.14);
-    border-radius: 999px;
-
-    color: var(--accent-2);
-
-    background: rgba(159, 216, 209, 0.06);
-
-    font-size: 8px;
-    font-weight: 800;
-
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-
-  #promptModal #modalLikes {
-    color: var(--soft);
-
-    font-size: 10px;
-    font-weight: 600;
-  }
-
-
-  /* =======================================================
-     TITLE
-     ======================================================= */
-
-  #promptModal #modalTitle {
-    margin: 0 0 5px;
-
-    color: var(--text);
-
-    font-size: 22px;
-    line-height: 1.15;
-
-    font-weight: 800;
-
-    letter-spacing: -0.035em;
-  }
-
-
-  /* =======================================================
-     CREATOR
-     ======================================================= */
-
-  #promptModal #modalCreator {
-    margin: 0 0 14px;
-
-    color: var(--soft);
-
-    font-size: 10px;
-    line-height: 1.4;
-  }
-
-
-  /* =======================================================
-     TAGS
-     ======================================================= */
-
-  #promptModal .modal-tags {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 6px;
-
-    margin: 0 0 15px;
-
-    overflow-x: auto;
-
-    scrollbar-width: none;
-  }
-
-
-  #promptModal .modal-tags::-webkit-scrollbar {
-    display: none;
-  }
-
-
-  #promptModal .modal-tags span {
-    flex: 0 0 auto;
-
-    padding: 5px 9px;
-
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 999px;
-
-    color: var(--soft);
-
-    background: rgba(255, 255, 255, 0.025);
-
-    font-size: 9px;
-    font-weight: 600;
-  }
-
-
-  /* =======================================================
-     PROMPT CONTAINER
-     ======================================================= */
-
-  #promptModal #modalPrompt {
-    position: relative;
-
-    width: 100%;
-
-    margin: 0 0 14px;
-    padding: 15px;
-
-    overflow: hidden;
-
-    border: 1px solid rgba(255, 255, 255, 0.075);
-    border-radius: var(--radius);
-
-    color: var(--muted);
-
-    background: rgba(255, 255, 255, 0.028);
-
-    font-family: inherit;
-
-    font-size: 12px;
-    line-height: 1.65;
-
-    white-space: pre-wrap;
-    word-break: break-word;
-
-    box-shadow: none;
-  }
-
-
-  /* =======================================================
-     PRIMARY CTA
-     GENERATE IN CHATGPT
-     ======================================================= */
-
-  #promptModal .modal-generate {
-    width: 100%;
-
-    min-height: 50px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    margin: 0 0 10px;
-    padding: 0 18px;
-
-    border: none;
-    border-radius: 999px;
-
-    color: var(--bg);
-
-    background: var(--accent-2);
-
-    font-family: inherit;
-
-    font-size: 13px;
-    font-weight: 800;
-
-    letter-spacing: -0.01em;
-
-    cursor: pointer;
-
-    box-shadow:
-      0 8px 30px rgba(159, 216, 209, 0.10);
-
-    transition:
-      transform 180ms ease,
-      filter 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-
-  #promptModal .modal-generate:hover {
-    filter: brightness(1.04);
-
-    box-shadow:
-      0 10px 35px rgba(159, 216, 209, 0.16);
-  }
-
-
-  #promptModal .modal-generate:active {
-    transform: scale(0.98);
-  }
-
-
-  /* =======================================================
-     SECONDARY ACTIONS
-     LIKE / SAVE / COPY / SHARE
-     ======================================================= */
-
-  #promptModal .modal-actions {
-    display: grid;
-
-    grid-template-columns: repeat(4, 1fr);
-
-    gap: 7px;
-
-    margin: 0;
-
-    padding: 0;
-
-    background: transparent;
-  }
-
-
-  #promptModal .modal-actions button {
-    min-height: 42px;
-
-    padding: 0 6px;
-
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 999px;
-
-    color: var(--text);
-
-    background: rgba(255, 255, 255, 0.035);
-
-    font-family: inherit;
-
-    font-size: 9px;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition:
-      transform 180ms ease,
-      background 180ms ease,
-      border-color 180ms ease;
-  }
-
-
-  #promptModal .modal-actions button:hover {
-    background: var(--surface);
-
-    border-color: var(--line-strong);
-  }
-
-
-  #promptModal .modal-actions button:active {
-    transform: scale(0.95);
-  }
-
-
-  /* =======================================================
-     ACTIVE LIKE / SAVE
-     ======================================================= */
-
-  #promptModal .modal-actions button.is-active {
-    color: var(--bg);
-
-    background: var(--accent-2);
-
-    border-color: var(--accent-2);
-  }
-
-
-  /* =======================================================
-     DOWNLOAD — SECONDARY FULL WIDTH
-     ======================================================= */
-
-  #promptModal #modalDownload {
-    grid-column: 1 / -1;
-
-    min-height: 40px;
-
-    margin-top: 2px;
-
-    color: var(--soft);
-
-    background: transparent;
-
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-
-
-  #promptModal #modalDownload:hover {
-    color: var(--muted);
-
-    background: rgba(255, 255, 255, 0.025);
-  }
-
-}
-
-
-/* =========================================================
-   HYDROZEN — PREMIUM MOBILE PROMPT DETAIL UI
-   ---------------------------------------------------------
-   ONLY affects mobile prompt detail modal.
-   Homepage cards: unchanged.
-   Desktop: unchanged.
-   ========================================================= */
-
-@media (max-width: 768px) {
-
-  /* =======================================================
-     MODAL
-     ======================================================= */
-
-  #promptModal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-
-    width: 100%;
-    height: 100dvh;
-
-    padding: 0;
-
-    overflow-x: hidden;
-    overflow-y: auto;
-
-    background: var(--bg);
-  }
-
-
-  /* Hide modal backdrop on mobile */
-  #promptModal .modal-backdrop {
-    display: none;
-  }
-
-
-  /* =======================================================
-     MODAL CARD
-     ======================================================= */
-
-  #promptModal .modal-card {
-    position: relative;
-
-    width: 100%;
-    min-height: 100dvh;
-
-    display: flex;
-    flex-direction: column;
-
-    margin: 0;
-
-    overflow: hidden;
-
-    border: none;
-    border-radius: 0;
-
-    background: var(--bg);
-
-    box-shadow: none;
-  }
-
-
-  /* =======================================================
-     HERO IMAGE
-     ======================================================= */
-
-  #promptModal .modal-image {
-    position: relative;
-
-    width: 100%;
-
-    /*
-      More immersive image.
-      Reduces the empty space from your current screenshot.
-    */
-    height: 62dvh;
-    min-height: 420px;
-
-    overflow: hidden;
-
-    background: var(--bg-2);
-  }
-
-
-  #promptModal #modalImage {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-
-    cursor: zoom-in;
-  }
-
-
-  /* =======================================================
-     IMAGE GRADIENT
-     ======================================================= */
-
-  #promptModal .modal-image::after {
-    content: "";
-
-    position: absolute;
-    inset: 0;
-
-    pointer-events: none;
-
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.18) 0%,
-      transparent 35%,
-      transparent 72%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-
-
-  /* =======================================================
-     CLOSE BUTTON
-     ======================================================= */
-
-  #promptModal .modal-close {
-    position: absolute;
-
-    top: 14px;
-    left: 14px;
-
-    z-index: 20;
-
-    width: 38px;
-    height: 38px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0;
-
-    border: 1px solid var(--line);
-    border-radius: 50%;
-
-    color: var(--text);
-
-    background: rgba(8, 9, 11, 0.55);
-
-    font-size: 14px;
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    transition:
-      background 180ms ease,
-      transform 180ms ease;
-  }
-
-
-  #promptModal .modal-close:active {
-    transform: scale(0.92);
-
-    background: var(--surface-2);
-  }
-
-
-  /* =======================================================
-     CONTENT AREA
-     ======================================================= */
-
-  #promptModal .modal-content {
-    position: relative;
-    z-index: 5;
-
-    width: 100%;
-
-    padding: 14px 16px 110px;
-
-    background: var(--bg);
-  }
-
-
-  /* =======================================================
-     META
-     CHATGPT · 0 LIKES
-     ======================================================= */
-
-  #promptModal .modal-kicker {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    margin-bottom: 9px;
-  }
-
-
-  #promptModal #modalCategory {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 5px 8px;
-
-    border: 1px solid rgba(159, 216, 209, 0.14);
-    border-radius: 999px;
-
-    color: var(--accent-2);
-
-    background: rgba(159, 216, 209, 0.06);
-
-    font-size: 8px;
-    font-weight: 800;
-
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-
-  #promptModal #modalLikes {
-    color: var(--soft);
-
-    font-size: 10px;
-    font-weight: 600;
-  }
-
-
-  /* =======================================================
-     TITLE
-     ======================================================= */
-
-  #promptModal #modalTitle {
-    margin: 0 0 5px;
-
-    color: var(--text);
-
-    font-size: 22px;
-    line-height: 1.15;
-
-    font-weight: 800;
-
-    letter-spacing: -0.035em;
-  }
-
-
-  /* =======================================================
-     CREATOR
-     ======================================================= */
-
-  #promptModal #modalCreator {
-    margin: 0 0 14px;
-
-    color: var(--soft);
-
-    font-size: 10px;
-    line-height: 1.4;
-  }
-
-
-  /* =======================================================
-     TAGS
-     ======================================================= */
-
-  #promptModal .modal-tags {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 6px;
-
-    margin: 0 0 15px;
-
-    overflow-x: auto;
-
-    scrollbar-width: none;
-  }
-
-
-  #promptModal .modal-tags::-webkit-scrollbar {
-    display: none;
-  }
-
-
-  #promptModal .modal-tags span {
-    flex: 0 0 auto;
-
-    padding: 5px 9px;
-
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 999px;
-
-    color: var(--soft);
-
-    background: rgba(255, 255, 255, 0.025);
-
-    font-size: 9px;
-    font-weight: 600;
-  }
-
-
-  /* =======================================================
-     PROMPT CONTAINER
-     ======================================================= */
-
-  #promptModal #modalPrompt {
-    position: relative;
-
-    width: 100%;
-
-    margin: 0 0 14px;
-    padding: 15px;
-
-    overflow: hidden;
-
-    border: 1px solid rgba(255, 255, 255, 0.075);
-    border-radius: var(--radius);
-
-    color: var(--muted);
-
-    background: rgba(255, 255, 255, 0.028);
-
-    font-family: inherit;
-
-    font-size: 12px;
-    line-height: 1.65;
-
-    white-space: pre-wrap;
-    word-break: break-word;
-
-    box-shadow: none;
-  }
-
-
-  /* =======================================================
-     PRIMARY CTA
-     GENERATE IN CHATGPT
-     ======================================================= */
-
-  #promptModal .modal-generate {
-    width: 100%;
-
-    min-height: 50px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    margin: 0 0 10px;
-    padding: 0 18px;
-
-    border: none;
-    border-radius: 999px;
-
-    color: var(--bg);
-
-    background: var(--accent-2);
-
-    font-family: inherit;
-
-    font-size: 13px;
-    font-weight: 800;
-
-    letter-spacing: -0.01em;
-
-    cursor: pointer;
-
-    box-shadow:
-      0 8px 30px rgba(159, 216, 209, 0.10);
-
-    transition:
-      transform 180ms ease,
-      filter 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-
-  #promptModal .modal-generate:hover {
-    filter: brightness(1.04);
-
-    box-shadow:
-      0 10px 35px rgba(159, 216, 209, 0.16);
-  }
-
-
-  #promptModal .modal-generate:active {
-    transform: scale(0.98);
-  }
-
-
-  /* =======================================================
-     SECONDARY ACTIONS
-     LIKE / SAVE / COPY / SHARE
-     ======================================================= */
-
-  #promptModal .modal-actions {
-    display: grid;
-
-    grid-template-columns: repeat(4, 1fr);
-
-    gap: 7px;
-
-    margin: 0;
-
-    padding: 0;
-
-    background: transparent;
-  }
-
-
-  #promptModal .modal-actions button {
-    min-height: 42px;
-
-    padding: 0 6px;
-
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 999px;
-
-    color: var(--text);
-
-    background: rgba(255, 255, 255, 0.035);
-
-    font-family: inherit;
-
-    font-size: 9px;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition:
-      transform 180ms ease,
-      background 180ms ease,
-      border-color 180ms ease;
-  }
-
-
-  #promptModal .modal-actions button:hover {
-    background: var(--surface);
-
-    border-color: var(--line-strong);
-  }
-
-
-  #promptModal .modal-actions button:active {
-    transform: scale(0.95);
-  }
-
-
-  /* =======================================================
-     ACTIVE LIKE / SAVE
-     ======================================================= */
-
-  #promptModal .modal-actions button.is-active {
-    color: var(--bg);
-
-    background: var(--accent-2);
-
-    border-color: var(--accent-2);
-  }
-
-
-  /* =======================================================
-     DOWNLOAD — SECONDARY FULL WIDTH
-     ======================================================= */
-
-  #promptModal #modalDownload {
-    grid-column: 1 / -1;
-
-    min-height: 40px;
-
-    margin-top: 2px;
-
-    color: var(--soft);
-
-    background: transparent;
-
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-
-
-  #promptModal #modalDownload:hover {
-    color: var(--muted);
-
-    background: rgba(255, 255, 255, 0.025);
-  }
-
-}
-
-
-/* =========================================================
-   SMALL PHONES
-   ========================================================= */
-
-/* =======================================================
-   MOBILE PROMPT IMAGE — FULL IMAGE PREVIEW
-   ======================================================= */
-
-@media (max-width: 768px) {
 
   #promptModal .modal-image {
     position: relative;
 
     width: 100%;
     height: 68dvh;
-    min-height: 480px;
+    min-height: 440px;
 
     display: flex;
     align-items: center;
@@ -3786,8 +2484,17 @@ transition: transform .2s ease;
 
     overflow: hidden;
 
-    background: var(--bg-2);
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(255,255,255,0.035),
+        transparent 65%
+      ),
+      var(--bg-2);
   }
+
+
+  /* FULL IMAGE — NO CROPPING */
 
   #promptModal #modalImage {
     width: 100%;
@@ -3795,42 +2502,68 @@ transition: transform .2s ease;
 
     display: block;
 
-    /*
-      SHOW THE COMPLETE IMAGE
-      No cropping.
-    */
     object-fit: contain;
     object-position: center;
 
     cursor: zoom-in;
   }
 
-  /* Subtle gradient overlay */
+
+  /* =======================================================
+     IMAGE TOP GRADIENT
+     ======================================================= */
+
+  #promptModal .modal-image::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.35),
+      transparent 22%
+    );
+  }
+
+
+  /* =======================================================
+     IMAGE BOTTOM GRADIENT
+     ======================================================= */
+
   #promptModal .modal-image::after {
     content: "";
 
     position: absolute;
     inset: 0;
 
+    z-index: 2;
+
     pointer-events: none;
 
     background: linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.12) 0%,
-      transparent 35%,
-      transparent 75%,
-      rgba(0, 0, 0, 0.35) 100%
+      transparent 60%,
+      rgba(0,0,0,0.28) 100%
     );
   }
 
-  /* Close button stays above image */
+
+  /* =======================================================
+     CLOSE BUTTON
+     ======================================================= */
+
   #promptModal .modal-close {
     position: absolute;
 
     top: 14px;
     left: 14px;
 
-    z-index: 20;
+    z-index: 10;
 
     width: 38px;
     height: 38px;
@@ -3841,28 +2574,367 @@ transition: transform .2s ease;
 
     padding: 0;
 
-    border: 1px solid var(--line);
+    border: 1px solid rgba(255,255,255,0.16);
     border-radius: 50%;
 
     color: var(--text);
-    background: rgba(8, 9, 11, 0.55);
 
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgba(8,9,11,0.55);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    box-shadow:
+      0 8px 25px rgba(0,0,0,0.25);
+
+    transition:
+      transform 180ms ease,
+      background 180ms ease;
+  }
+
+  #promptModal .modal-close:active {
+    transform: scale(0.92);
+  }
+
+
+  /* =======================================================
+     IMAGE EXPAND BUTTON
+     If your HTML has one
+     ======================================================= */
+
+  #promptModal .modal-expand {
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    z-index: 10;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 50%;
+
+    color: var(--text);
+
+    background: rgba(8,9,11,0.55);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+
+  /* =======================================================
+     CONTENT
+     ======================================================= */
+
+  #promptModal .modal-content {
+    position: relative;
+    z-index: 5;
+
+    width: 100%;
+
+    padding: 20px 16px 110px;
+
+    background: var(--bg);
+  }
+
+
+  /* =======================================================
+     META ROW
+     ======================================================= */
+
+  #promptModal .modal-kicker {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+  }
+
+
+  #promptModal #modalCategory {
+    padding: 5px 9px;
+
+    border: 1px solid rgba(159,216,209,0.15);
+    border-radius: 999px;
+
+    color: var(--accent-2);
+
+    background: rgba(159,216,209,0.06);
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+
+  #promptModal #modalLikes {
+    color: var(--soft);
+
+    font-size: 10px;
+  }
+
+
+  /* =======================================================
+     TITLE
+     ======================================================= */
+
+  #promptModal #modalTitle {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 24px;
+    line-height: 1.12;
+
+    font-weight: 800;
+
+    letter-spacing: -0.04em;
+  }
+
+
+  /* =======================================================
+     CREATOR
+     ======================================================= */
+
+  #promptModal #modalCreator {
+    margin: 7px 0 17px;
+
+    color: var(--soft);
+
+    font-size: 10px;
+  }
+
+
+  /* =======================================================
+     TAGS
+     ======================================================= */
+
+  #promptModal .modal-tags {
+    display: flex;
+    gap: 6px;
+
+    margin-bottom: 18px;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+  }
+
+  #promptModal .modal-tags::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  #promptModal .modal-tags span {
+    flex: 0 0 auto;
+
+    padding: 6px 10px;
+
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 999px;
+
+    color: var(--soft);
+
+    background: rgba(255,255,255,0.025);
+
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+
+  /* =======================================================
+     PROMPT CARD
+     ======================================================= */
+
+  #promptModal #modalPrompt {
+    width: 100%;
+
+    margin: 0 0 14px;
+    padding: 17px;
+
+    border: 1px solid rgba(255,255,255,0.075);
+    border-radius: var(--radius);
+
+    color: var(--muted);
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255,255,255,0.045),
+        rgba(255,255,255,0.018)
+      );
+
+    font-family: inherit;
+
+    font-size: 12px;
+    line-height: 1.7;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.025);
+  }
+
+
+  /* =======================================================
+     PRIMARY CTA
+     ======================================================= */
+
+  #promptModal .modal-generate {
+    width: 100%;
+
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 12px;
+
+    border: none;
+    border-radius: 999px;
+
+    color: var(--bg);
+
+    background: var(--accent-2);
+
+    font-size: 13px;
+    font-weight: 800;
+
+    letter-spacing: -0.01em;
+
+    box-shadow:
+      0 10px 35px rgba(159,216,209,0.10);
+
+    transition:
+      transform 180ms ease,
+      filter 180ms ease;
+  }
+
+
+  #promptModal .modal-generate:active {
+    transform: scale(0.98);
+  }
+
+
+  /* =======================================================
+     SECONDARY ACTIONS
+     ======================================================= */
+
+  #promptModal .modal-actions {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 6px;
+
+    margin: 0;
+
+    padding: 0;
+
+    background: transparent;
+  }
+
+
+  #promptModal .modal-actions button {
+    min-height: 42px;
+
+    padding: 0 5px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+
+    color: var(--muted);
+
+    background: rgba(255,255,255,0.025);
+
+    font-size: 9px;
+    font-weight: 700;
+
+    transition:
+      transform 180ms ease,
+      background 180ms ease;
+  }
+
+
+  #promptModal .modal-actions button:active {
+    transform: scale(0.95);
+  }
+
+
+  /* ACTIVE STATE */
+
+  #promptModal .modal-actions button.is-active {
+    color: var(--bg);
+
+    background: var(--accent-2);
+
+    border-color: var(--accent-2);
+  }
+
+
+  /* =======================================================
+     DOWNLOAD
+     ======================================================= */
+
+  #promptModal #modalDownload {
+    grid-column: 1 / -1;
+
+    min-height: 40px;
+
+    margin-top: 3px;
+
+    color: var(--soft);
+
+    background: transparent;
+
+    border-color: rgba(255,255,255,0.05);
   }
 
 }
 
 
-/* =======================================================
-   SMALL PHONES
-   ======================================================= */
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
 
 @media (max-width: 480px) {
 
   #promptModal .modal-image {
     height: 64dvh;
-    min-height: 420px;
+    min-height: 400px;
+  }
+
+  #promptModal .modal-content {
+    padding: 18px 13px 100px;
+  }
+
+  #promptModal #modalTitle {
+    font-size: 21px;
+  }
+
+  #promptModal #modalPrompt {
+    padding: 15px;
+
+    font-size: 11px;
+    line-height: 1.65;
+  }
+
+  #promptModal .modal-generate {
+    min-height: 49px;
+
+    font-size: 12px;
   }
 
 }
