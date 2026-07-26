@@ -2783,3 +2783,192 @@ transition: transform .2s ease;
   }
 
 }
+@media (max-width: 768px) {
+
+  #promptModal {
+    position: fixed;
+    inset: 0;
+
+    width: 100vw;
+    height: 100dvh;
+
+    overflow: hidden;
+
+    background: var(--bg);
+  }
+
+  #promptModal .modal-card {
+    width: 100%;
+    height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    margin: 0;
+
+    overflow: hidden;
+
+    background: var(--bg);
+  }
+
+
+  /* =========================================
+     IMAGE = 80% OF SCREEN
+     ========================================= */
+
+  #promptModal .modal-image {
+    width: 100%;
+    height: 80dvh;
+    flex: 0 0 80dvh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #000;
+  }
+
+
+  #promptModal #modalImage {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    /*
+      Complete image visible.
+      No cropping.
+      Image automatically becomes as large
+      as possible inside the 80% area.
+    */
+    object-fit: contain;
+    object-position: center;
+  }
+
+
+  /* =========================================
+     ACTION AREA = 20% OF SCREEN
+     ========================================= */
+
+  #promptModal .modal-content {
+    width: 100%;
+    height: 20dvh;
+    flex: 0 0 20dvh;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    overflow: hidden;
+
+    background: var(--bg);
+  }
+
+
+  /* Hide everything except buttons */
+
+  #promptModal .modal-kicker,
+  #promptModal #modalTitle,
+  #promptModal #modalCreator,
+  #promptModal .modal-tags,
+  #promptModal #modalPrompt {
+    display: none;
+  }
+
+
+  /* =========================================
+     FOUR BUTTONS — ONE LINE
+     ========================================= */
+
+  #promptModal .modal-actions {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+      1fr
+      1fr
+      1fr
+      1.8fr;
+
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+  }
+
+
+  #promptModal .modal-actions button {
+    width: 100%;
+    height: 44px;
+
+    padding: 0 8px;
+
+    border-radius: 8px;
+
+    border: 1px solid var(--line);
+
+    color: var(--muted);
+
+    background: var(--surface);
+
+    font-family: inherit;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    white-space: nowrap;
+  }
+
+
+  /* =========================================
+     GENERATE = PRIMARY BUTTON
+     ========================================= */
+
+  #promptModal #modalGenerate {
+    color: #08090b;
+
+    background: var(--accent-2);
+
+    border-color: var(--accent-2);
+
+    font-weight: 800;
+  }
+
+
+  /* =========================================
+     CLOSE BUTTON
+     ========================================= */
+
+  #promptModal .modal-close {
+    position: absolute;
+
+    top: 14px;
+    left: 14px;
+
+    z-index: 20;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border: 1px solid rgba(255,255,255,0.18);
+
+    color: white;
+
+    background: rgba(0,0,0,0.55);
+
+    backdrop-filter: blur(10px);
+  }
+
+}
