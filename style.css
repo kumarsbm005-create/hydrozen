@@ -976,7 +976,7 @@ h2 {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   opacity: 0;
   transition: opacity 220ms ease;
 }
@@ -2409,367 +2409,411 @@ transition: transform .2s ease;
 
 }
 /* =========================================================
-   HYDROZEN — NEW PROMPT PREVIEW CARD UI
-   Only affects prompt cards
-   ========================================================= */
-
-.prompt-card {
-  position: relative;
-  min-height: 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 20px;
-  background: #080a0d;
-  isolation: isolate;
-  transition:
-    transform 280ms ease,
-    border-color 280ms ease,
-    box-shadow 280ms ease;
-}
-
-.prompt-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(159, 216, 209, 0.28);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
-}
-
-
-/* ---------- IMAGE ---------- */
-
-.card-media {
-  position: relative;
-  width: 100%;
-  height: 460px;
-  overflow: hidden;
-  background: #0b0d10;
-}
-
-.card-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transform: scale(1.01);
-  transition:
-    transform 600ms cubic-bezier(.2,.7,.2,1),
-    filter 600ms ease;
-}
-
-.prompt-card:hover .card-media img {
-  transform: scale(1.045);
-  filter: saturate(1.05) contrast(1.03);
-}
-
-
-/* ---------- DARK GRADIENT OVERLAY ---------- */
-
-.card-media::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.05) 0%,
-      transparent 40%,
-      rgba(0, 0, 0, 0.18) 65%,
-      rgba(0, 0, 0, 0.88) 100%
-    );
-}
-
-
-/* ---------- TRENDING BADGE ---------- */
-
-.trending-badge {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  left: auto;
-  z-index: 3;
-
-  padding: 7px 10px;
-
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-
-  color: #fff;
-  background: rgba(0, 0, 0, 0.48);
-
-  font-size: 10px;
-  font-weight: 800;
-
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-
-/* ---------- SAVE BUTTON ---------- */
-
-.save-button {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  right: auto;
-  z-index: 3;
-
-  min-width: 36px;
-  width: 36px;
-  height: 36px;
-
-  padding: 0;
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50%;
-
-  color: #fff;
-  background: rgba(0, 0, 0, 0.42);
-
-  font-size: 14px;
-
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-
-/* ---------- CARD CONTENT ---------- */
-
-.card-body {
-  position: relative;
-  z-index: 2;
-
-  padding: 16px 18px 18px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.025),
-      rgba(255, 255, 255, 0)
-    );
-}
-
-
-/* ---------- TOP META ---------- */
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.engine-chip {
-  padding: 6px 9px;
-
-  border: 1px solid rgba(159, 216, 209, 0.18);
-  border-radius: 999px;
-
-  color: var(--accent-2);
-  background: rgba(159, 216, 209, 0.06);
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-
-/* ---------- TITLE ---------- */
-
-.prompt-card h3 {
-  margin: 14px 0 6px;
-
-  color: var(--text);
-
-  font-size: 19px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-
-/* ---------- CREATOR ---------- */
-
-.creator {
-  margin-bottom: 10px;
-
-  color: var(--soft);
-
-  font-size: 11px;
-  font-weight: 600;
-}
-
-
-/* ---------- PROMPT TEXT ---------- */
-
-.prompt-preview {
-  display: -webkit-box;
-
-  min-height: 0;
-  margin-bottom: 12px;
-
-  overflow: hidden;
-
-  color: var(--muted);
-
-  font-size: 12px;
-  line-height: 1.55;
-
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-
-/* ---------- TAGS ---------- */
-
-.tag-list {
-  display: flex;
-  gap: 6px;
-
-  margin: 10px 0 14px;
-
-  overflow: hidden;
-  flex-wrap: nowrap;
-}
-
-.tag-list span {
-  flex: 0 0 auto;
-
-  padding: 5px 8px;
-
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 999px;
-
-  color: #c9c6bd;
-  background: rgba(255, 255, 255, 0.035);
-
-  font-size: 9px;
-  font-weight: 700;
-}
-
-
-/* ---------- BOTTOM ACTIONS ---------- */
-
-.card-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-action {
-  min-height: 38px;
-
-  padding: 0 13px;
-
-  border-radius: 999px;
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.card-action.copy-button {
-  flex: 1;
-
-  color: #0b0d0e;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--accent),
-      var(--accent-2)
-    );
-
-  border: none;
-}
-
-
-/* =========================================================
-   MOBILE — MATCH NEW MOBILE PREVIEW
+   HYDROZEN — MOBILE PROMPT DETAIL / PREVIEW UI
+   Homepage cards are NOT affected.
+   Desktop is NOT affected.
    ========================================================= */
 
 @media (max-width: 768px) {
 
-  .prompt-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+  /* -----------------------------------------
+     FULL SCREEN PROMPT MODAL
+     ----------------------------------------- */
+
+  body.modal-open {
+    overflow: hidden;
   }
 
-  .prompt-card {
-    border-radius: 18px;
+  #promptModal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    width: 100vw;
+    height: 100dvh;
+
+    margin: 0;
+    padding: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    background: #06171b;
+
+    border: none;
+    border-radius: 0;
   }
 
-  .card-media {
-    height: 430px;
+
+  /* -----------------------------------------
+     MODAL CONTENT
+     ----------------------------------------- */
+
+  #promptModal .prompt-modal-content {
+    width: 100%;
+    min-height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #06171b;
   }
 
-  .card-body {
+
+  /* -----------------------------------------
+     IMAGE SECTION
+     ----------------------------------------- */
+
+  #promptModal .modal-image-wrapper {
+    position: relative;
+
+    width: 100%;
+    height: 62dvh;
+    min-height: 430px;
+
+    overflow: hidden;
+
+    background: #080b0d;
+  }
+
+  #promptModal #modalImage {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    cursor: zoom-in;
+  }
+
+
+  /* -----------------------------------------
+     IMAGE DARK GRADIENT
+     ----------------------------------------- */
+
+  #promptModal .modal-image-wrapper::after {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.25) 0%,
+        transparent 30%,
+        transparent 65%,
+        rgba(0,0,0,0.75) 100%
+      );
+  }
+
+
+  /* -----------------------------------------
+     CLOSE BUTTON
+     ----------------------------------------- */
+
+  #promptModal .modal-close {
+    position: absolute;
+
+    top: 14px;
+    left: 14px;
+
+    z-index: 10;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+
+    color: #fff;
+
+    background: rgba(0,0,0,0.45);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+
+  /* -----------------------------------------
+     FULLSCREEN BUTTON
+     ----------------------------------------- */
+
+  #promptModal .modal-expand {
+    position: absolute;
+
+    right: 14px;
+    bottom: 14px;
+
+    z-index: 10;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+
+    color: #fff;
+
+    background: rgba(0,0,0,0.45);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+
+  /* -----------------------------------------
+     MODAL BODY
+     ----------------------------------------- */
+
+  #promptModal .modal-body {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+
+    padding: 16px 14px 100px;
+
+    background: #06171b;
+  }
+
+
+  /* -----------------------------------------
+     CATEGORY / META
+     ----------------------------------------- */
+
+  #promptModal #modalCategory {
+    display: inline-flex;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+
+    color: #d8eeee;
+
+    background: rgba(159,216,209,0.10);
+
+    font-size: 7px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+  }
+
+
+  #promptModal #modalLikes {
+    margin-left: 8px;
+
+    color: rgba(220,235,235,0.55);
+
+    font-size: 10px;
+  }
+
+
+  /* -----------------------------------------
+     TITLE
+     ----------------------------------------- */
+
+  #promptModal #modalTitle {
+    margin: 10px 0 4px;
+
+    color: #f2f7f7;
+
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 800;
+
+    letter-spacing: -0.025em;
+  }
+
+
+  /* -----------------------------------------
+     CREATOR
+     ----------------------------------------- */
+
+  #promptModal #modalCreator {
+    margin-bottom: 14px;
+
+    color: rgba(220,235,235,0.48);
+
+    font-size: 10px;
+  }
+
+
+  /* -----------------------------------------
+     PROMPT TEXT
+     ----------------------------------------- */
+
+  #promptModal #modalPrompt {
     padding: 14px;
+
+    margin-bottom: 14px;
+
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+
+    color: rgba(230,240,240,0.75);
+
+    background: rgba(255,255,255,0.025);
+
+    font-size: 12px;
+    line-height: 1.6;
   }
 
-  .prompt-card h3 {
-    font-size: 18px;
+
+  /* -----------------------------------------
+     TAGS
+     ----------------------------------------- */
+
+  #promptModal #modalTags {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+
+    overflow-x: auto;
+
+    margin-bottom: 16px;
+
+    scrollbar-width: none;
   }
 
-  .prompt-preview {
-    font-size: 11px;
-    -webkit-line-clamp: 2;
+  #promptModal #modalTags::-webkit-scrollbar {
+    display: none;
   }
 
-  .card-actions {
+  #promptModal #modalTags span {
+    flex: 0 0 auto;
+
+    padding: 5px 9px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+
+    color: rgba(230,240,240,0.65);
+
+    background: rgba(255,255,255,0.035);
+
+    font-size: 9px;
+  }
+
+
+  /* -----------------------------------------
+     ACTION BAR
+     LIKE / SHARE / SAVE / COPY
+     ----------------------------------------- */
+
+  #promptModal .modal-actions {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
     gap: 7px;
+
+    margin-bottom: 12px;
   }
 
-  .card-action {
-    min-height: 40px;
+  #promptModal .modal-actions button {
+    min-height: 42px;
+
+    padding: 0 6px;
+
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 999px;
+
+    color: #e7eeee;
+
+    background: rgba(255,255,255,0.045);
+
+    font-size: 9px;
+    font-weight: 700;
   }
+
+
+  /* Active Like / Save */
+
+  #promptModal .modal-actions button.is-active {
+    color: #06171b;
+
+    background: #9fd8d1;
+
+    border-color: #9fd8d1;
+  }
+
+
+  /* -----------------------------------------
+     GENERATE IN CHATGPT BUTTON
+     ----------------------------------------- */
+
+  #promptModal .generate-chatgpt {
+    width: 100%;
+
+    min-height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 4px;
+
+    border: none;
+    border-radius: 999px;
+
+    color: #06171b;
+
+    background: #b8f0e8;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    box-shadow:
+      0 10px 35px rgba(159,216,209,0.12);
+  }
+
 }
 
 
 /* =========================================================
-   SMALL MOBILE
+   SMALL PHONES
    ========================================================= */
 
 @media (max-width: 480px) {
 
-  .prompt-grid {
-    gap: 12px;
+  #promptModal .modal-image-wrapper {
+    height: 58dvh;
+    min-height: 380px;
   }
 
-  .prompt-card {
-    border-radius: 16px;
+  #promptModal .modal-body {
+    padding: 14px 12px 90px;
   }
 
-  .card-media {
-    height: 390px;
+  #promptModal #modalTitle {
+    font-size: 18px;
   }
 
-  .card-body {
-    padding: 13px;
-  }
-
-  .prompt-card h3 {
-    margin-top: 11px;
-    font-size: 17px;
-  }
-
-  .creator {
-    font-size: 10px;
-  }
-
-  .prompt-preview {
+  #promptModal #modalPrompt {
     font-size: 11px;
-    line-height: 1.5;
   }
 
-  .tag-list {
-    margin-top: 8px;
-    margin-bottom: 12px;
+  #promptModal .modal-actions {
+    gap: 5px;
   }
 
-  .tag-list span {
+  #promptModal .modal-actions button {
+    min-height: 40px;
     font-size: 8px;
   }
 
-  .card-action {
-    min-height: 38px;
-    font-size: 9px;
-  }
 }
