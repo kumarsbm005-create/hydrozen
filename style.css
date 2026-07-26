@@ -3280,52 +3280,49 @@ transition: transform .2s ease;
 }
 
 
-/* =========================================================
-   SMALL PHONES
-   ========================================================= */
+/* =======================================================
+   LARGER IMAGE PREVIEW
+   ======================================================= */
+
+@media (max-width: 768px) {
+
+  #promptModal .modal-image {
+    position: relative;
+
+    width: 100%;
+
+    /* Larger visual preview */
+    height: 68dvh;
+    min-height: 480px;
+
+    overflow: hidden;
+
+    background: var(--bg-2);
+  }
+
+  #promptModal #modalImage {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    cursor: zoom-in;
+  }
+
+}
+
+
+/* =======================================================
+   SMALLER PHONES
+   ======================================================= */
 
 @media (max-width: 480px) {
 
   #promptModal .modal-image {
-    height: 58dvh;
-    min-height: 370px;
-  }
-
-
-  #promptModal .modal-content {
-    padding: 13px 13px 100px;
-  }
-
-
-  #promptModal #modalTitle {
-    font-size: 20px;
-  }
-
-
-  #promptModal #modalPrompt {
-    padding: 14px;
-
-    font-size: 11px;
-    line-height: 1.6;
-  }
-
-
-  #promptModal .modal-generate {
-    min-height: 48px;
-
-    font-size: 12px;
-  }
-
-
-  #promptModal .modal-actions {
-    gap: 5px;
-  }
-
-
-  #promptModal .modal-actions button {
-    min-height: 39px;
-
-    font-size: 8px;
+    height: 64dvh;
+    min-height: 420px;
   }
 
 }
