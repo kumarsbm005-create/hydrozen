@@ -2494,10 +2494,10 @@ transition: transform .2s ease;
 
     width: 100%;
 
-    height: 80dvh;
+    height: 70dvh;
     min-height: 0;
 
-    flex: 0 0 80dvh;
+    flex: 0 0 70dvh;
 
     display: flex;
     align-items: center;
@@ -2572,50 +2572,77 @@ transition: transform .2s ease;
 
     width: 100%;
 
-    height: 20dvh;
+    height: 30dvh;
     min-height: 0;
 
-    flex: 0 0 20dvh;
+    flex: 0 0 30dvh;
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
 
-    padding: 12px 12px;
+    padding: 10px 14px 0;
 
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 
     background: var(--bg);
   }
 
 
   /* =======================================================
-     HIDE ALL INFORMATION
+     SHOW DETAILS (COMPACT, FOR 30% AREA)
      ======================================================= */
 
   /* Model */
   #promptModal .modal-kicker {
-    display: none;
+    display: flex;
+    gap: 8px;
+    margin: 0 0 4px;
+    font-size: 10px;
   }
 
   /* Title */
   #promptModal #modalTitle {
-    display: none;
+    display: block;
+    margin: 0 0 4px;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   /* Creator */
   #promptModal #modalCreator {
-    display: none;
+    display: block;
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 11px;
   }
 
   /* Tags */
   #promptModal .modal-tags {
-    display: none;
+    display: flex;
+    gap: 6px;
+    margin: 0 0 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Prompt text */
   #promptModal #modalPrompt {
-    display: none;
+    display: block;
+    max-height: 76px;
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    overflow-y: auto;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.5;
   }
 
 
@@ -2624,6 +2651,10 @@ transition: transform .2s ease;
      ======================================================= */
 
   #promptModal .modal-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+
     width: 100%;
 
     display: grid;
@@ -2638,10 +2669,10 @@ transition: transform .2s ease;
 
     gap: 7px;
 
-    margin: 0;
-    padding: 0;
+    margin: 6px 0 0;
+    padding: 8px 0 10px;
 
-    background: transparent;
+    background: var(--bg);
 
     overflow: hidden;
   }
@@ -2818,8 +2849,8 @@ transition: transform .2s ease;
 
   #promptModal .modal-image {
     width: 100%;
-    height: 80dvh;
-    flex: 0 0 80dvh;
+    height: 70dvh;
+    flex: 0 0 70dvh;
 
     display: flex;
     align-items: center;
@@ -2854,28 +2885,68 @@ transition: transform .2s ease;
 
   #promptModal .modal-content {
     width: 100%;
-    height: 20dvh;
-    flex: 0 0 20dvh;
+    height: 30dvh;
+    flex: 0 0 30dvh;
 
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
 
-    padding: 0 12px;
+    padding: 10px 14px 0;
 
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 
     background: var(--bg);
   }
 
 
-  /* Hide everything except buttons */
+  /* Show details, sized for the 30% area */
 
-  #promptModal .modal-kicker,
-  #promptModal #modalTitle,
-  #promptModal #modalCreator,
-  #promptModal .modal-tags,
+  #promptModal .modal-kicker {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 4px;
+    font-size: 10px;
+  }
+
+  #promptModal #modalTitle {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0 0 4px;
+    font-size: 14px;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  #promptModal #modalCreator {
+    display: block;
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  #promptModal .modal-tags {
+    display: flex;
+    gap: 6px;
+    margin: 0 0 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
   #promptModal #modalPrompt {
-    display: none;
+    display: block;
+    max-height: 76px;
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    overflow-y: auto;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.5;
   }
 
 
@@ -2884,6 +2955,10 @@ transition: transform .2s ease;
      ========================================= */
 
   #promptModal .modal-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+
     width: 100%;
 
     display: grid;
@@ -2896,8 +2971,10 @@ transition: transform .2s ease;
 
     gap: 8px;
 
-    margin: 0;
-    padding: 0;
+    margin: 6px 0 0;
+    padding: 8px 0 10px;
+
+    background: var(--bg);
 
     overflow: hidden;
   }
