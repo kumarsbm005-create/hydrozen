@@ -2651,9 +2651,8 @@ transition: transform .2s ease;
      ======================================================= */
 
   #promptModal .modal-actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
+    flex-shrink: 0;
+    margin-top: auto;
 
     width: 100%;
 
@@ -2669,7 +2668,6 @@ transition: transform .2s ease;
 
     gap: 7px;
 
-    margin: 6px 0 0;
     padding: 8px 0 10px;
 
     background: var(--bg);
@@ -2955,9 +2953,8 @@ transition: transform .2s ease;
      ========================================= */
 
   #promptModal .modal-actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
+    flex-shrink: 0;
+    margin-top: auto;
 
     width: 100%;
 
@@ -2971,7 +2968,6 @@ transition: transform .2s ease;
 
     gap: 8px;
 
-    margin: 6px 0 0;
     padding: 8px 0 10px;
 
     background: var(--bg);
