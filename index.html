@@ -224,7 +224,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <h2 id="modalTitle"></h2>
             <p id="modalCreator"></p>
           </div>
-          <button type="button" id="modalExpand" aria-label="Show more details" aria-expanded="false">⌃</button>
         </div>
         <div class="modal-tags" id="modalTags"></div>
         <pre id="modalPrompt"></pre>
@@ -298,39 +297,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </button>
   </nav>
 
-  <script>
-    // Mobile prompt-modal "frosted overlay" expand/collapse.
-    // Tapping the title/creator row toggles a taller detail panel
-    // (tags + full prompt + secondary actions). Only touches the
-    // #promptModal markup; nothing else on the page is affected.
-    (function () {
-      var summary = document.getElementById('modalSummary');
-      var expandBtn = document.getElementById('modalExpand');
-      if (!summary) return;
-
-      summary.addEventListener('click', function () {
-        var card = summary.closest('.modal-card');
-        if (!card) return;
-        var expanded = card.classList.toggle('is-expanded');
-        if (expandBtn) {
-          expandBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        }
-      });
-
-      // Every time the modal is (re)opened for a (possibly new) prompt,
-      // start collapsed rather than keeping the previous prompt's state.
-      var modal = document.getElementById('promptModal');
-      if (modal && window.MutationObserver) {
-        new MutationObserver(function () {
-          if (!modal.hasAttribute('hidden')) {
-            var card = modal.querySelector('.modal-card');
-            if (card) card.classList.remove('is-expanded');
-            if (expandBtn) expandBtn.setAttribute('aria-expanded', 'false');
-          }
-        }).observe(modal, { attributes: true, attributeFilter: ['hidden'] });
-      }
-    })();
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" async></script>
   <script src="/env.js"></script>
   <script src="script.js?v=hydrozen-13"></script>
