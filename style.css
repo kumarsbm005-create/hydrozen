@@ -2408,111 +2408,69 @@ transition: transform .2s ease;
     cursor:pointer;
 
 }
+
+
 /* =========================================================
-   HYDROZEN — MOBILE PROMPT PREVIEW
+   HYDROZEN — MOBILE PROMPT MODAL
+   "Frosted overlay" layout
    ---------------------------------------------------------
-   80%  = Full Image
-   20%  = Action Bar
+   Full-bleed image behind everything.
+   Save button floats over the top-right corner of the image.
+   A frosted glass panel is anchored to the bottom, showing
+   just the title + creator + primary action by default.
+   Tapping the panel (or the chevron) expands it to reveal
+   the model/likes row, tags, and the full prompt text plus
+   the secondary actions (Copy / Share).
 
-   Mobile only
-   Desktop untouched
-   Homepage untouched
-
-   No prompt text
-   No tags
-   No carousel
-   No horizontal swipe
-   No vertical page swipe
-   All actions visible
+   Mobile only. Desktop layout is untouched.
    ========================================================= */
-
 
 @media (max-width: 768px) {
 
-  /* =======================================================
-     FIXED MOBILE MODAL
-     ======================================================= */
+  /* ---------- Fullscreen modal shell ---------- */
 
   #promptModal {
     position: fixed;
-
     inset: 0;
-
     z-index: 9999;
-
     width: 100vw;
     height: 100dvh;
-
     padding: 0;
-
     overflow: hidden;
-
-    background: var(--bg);
+    background: #000;
   }
-
-
-  /* Remove backdrop */
 
   #promptModal .modal-backdrop {
     display: none;
   }
 
-
-  /* =======================================================
-     MODAL CARD
-     ======================================================= */
-
   #promptModal .modal-card {
     position: relative;
-
     width: 100%;
     height: 100dvh;
-
-    display: flex;
-    flex-direction: column;
-
     margin: 0;
-
     overflow: hidden;
-
     border: none;
     border-radius: 0;
-
-    background: var(--bg);
-
+    background: #000;
     box-shadow: none;
   }
 
-
-  /* =======================================================
-     IMAGE AREA
-     80% OF SCREEN
-     ======================================================= */
+  /* ---------- Full-bleed image ---------- */
 
   #promptModal .modal-image {
-    position: relative;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
 
     width: 100%;
+    height: 100%;
 
-    height: 70dvh;
-    min-height: 0;
-
-    flex: 0 0 70dvh;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
+    display: block;
     overflow: hidden;
 
-    background: var(--bg-2);
+    background: #000;
   }
-
-
-  /* =======================================================
-     COMPLETE IMAGE
-     NEVER CROP
-     ======================================================= */
 
   #promptModal #modalImage {
     width: 100%;
@@ -2520,24 +2478,21 @@ transition: transform .2s ease;
 
     display: block;
 
-    object-fit: contain;
+    /* Edge-to-edge fill. Switch to `contain` if you'd rather
+       never crop the image than fill the frame. */
+    object-fit: cover;
     object-position: center;
 
     cursor: zoom-in;
   }
 
-
-  /* =======================================================
-     CLOSE BUTTON
-     ======================================================= */
+  /* ---------- Close button, floats over image ---------- */
 
   #promptModal .modal-close {
     position: absolute;
-
     top: 14px;
     left: 14px;
-
-    z-index: 20;
+    z-index: 30;
 
     width: 38px;
     height: 38px;
@@ -2548,12 +2503,11 @@ transition: transform .2s ease;
 
     padding: 0;
 
-    border: 1px solid rgba(255,255,255,0.16);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 50%;
 
-    color: var(--text);
-
-    background: rgba(8,9,11,0.65);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
 
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -2561,130 +2515,240 @@ transition: transform .2s ease;
     font-size: 13px;
   }
 
+  /* ---------- Save button, floats top-right over image ----------
+     position:fixed (not absolute) so it escapes the bottom panel
+     and anchors to the actual screen corner instead. ---------- */
 
-  /* =======================================================
-     CONTENT / ACTION AREA
-     20% OF SCREEN
-     ======================================================= */
+  #promptModal #modalSave {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: 14px;
+    z-index: 9999;
+
+    width: auto;
+    height: 38px;
+    min-width: 0;
+
+    padding: 0 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  #promptModal #modalSave:active {
+    transform: scale(0.96);
+  }
+
+  /* ---------- Frosted bottom panel ---------- */
 
   #promptModal .modal-content {
-    position: relative;
-
-    width: 100%;
-
-    height: 30dvh;
-    min-height: 0;
-
-    flex: 0 0 30dvh;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
 
     display: flex;
     flex-direction: column;
 
-    padding: 10px 14px 0;
+    max-height: 30dvh;
 
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
 
-    background: var(--bg);
+    overflow: hidden;
+
+    /* NOTE: no transform/filter/backdrop-filter/will-change on this
+       element itself — the frosted look lives on ::before below.
+       Keeping this element "clean" of those properties is what lets
+       #modalSave use position:fixed to float over the image instead
+       of getting trapped inside this panel. */
+
+    transition: max-height 280ms ease;
   }
 
+  #promptModal .modal-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
 
-  /* =======================================================
-     SHOW DETAILS (COMPACT, FOR 30% AREA)
-     ======================================================= */
+    background: linear-gradient(
+      to top,
+      rgba(4, 5, 7, 0.95) 0%,
+      rgba(4, 5, 7, 0.82) 55%,
+      rgba(4, 5, 7, 0) 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 
-  /* Model */
-  #promptModal .modal-kicker {
+    pointer-events: none;
+  }
+
+  #promptModal .modal-card.is-expanded .modal-content {
+    max-height: 62dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tap target that toggles expand/collapse */
+
+  #promptModal .modal-summary {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+
+    cursor: pointer;
+  }
+
+  #promptModal .modal-summary-text {
+    min-width: 0;
+  }
+
+  #promptModal #modalExpand {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+
+    font-size: 12px;
+    line-height: 1;
+
+    transition: transform 220ms ease;
+  }
+
+  #promptModal .modal-card.is-expanded #modalExpand {
+    transform: rotate(180deg);
+  }
+
+  /* Model / likes row — hidden until expanded */
+
+  #promptModal .modal-kicker {
+    display: none;
     gap: 8px;
-    margin: 0 0 4px;
+    margin: 10px 0 0;
     font-size: 10px;
   }
 
+  #promptModal .modal-card.is-expanded .modal-kicker {
+    display: flex;
+  }
+
   /* Title */
+
   #promptModal #modalTitle {
-    display: block;
-    margin: 0 0 4px;
+    display: -webkit-box;
     overflow: hidden;
-    font-size: 14px;
+    margin: 0;
+    color: var(--text);
+    font-size: 15px;
     line-height: 1.3;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
   }
 
+  #promptModal .modal-card.is-expanded #modalTitle {
+    -webkit-line-clamp: 2;
+  }
+
   /* Creator */
+
   #promptModal #modalCreator {
     display: block;
-    margin: 0 0 6px;
+    margin: 2px 0 0;
     color: var(--muted);
     font-size: 11px;
   }
 
-  /* Tags */
+  /* Tags — hidden until expanded */
+
   #promptModal .modal-tags {
-    display: flex;
+    display: none;
     gap: 6px;
-    margin: 0 0 8px;
+    margin: 10px 0 0;
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Prompt text */
-  #promptModal #modalPrompt {
-    display: block;
-    max-height: 76px;
-    margin: 0 0 8px;
-    padding: 8px 10px;
-    overflow-y: auto;
-    border-radius: 10px;
-    font-size: 11px;
-    line-height: 1.5;
+  #promptModal .modal-card.is-expanded .modal-tags {
+    display: flex;
   }
 
+  /* Prompt text — hidden until expanded */
 
-  /* =======================================================
-     ACTION BAR
-     ======================================================= */
+  #promptModal #modalPrompt {
+    display: none;
+    max-height: 120px;
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    overflow-y: auto;
+    border-radius: 12px;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+
+  #promptModal .modal-card.is-expanded #modalPrompt {
+    display: block;
+  }
+
+  /* ---------- Action bar ---------- */
 
   #promptModal .modal-actions {
     flex-shrink: 0;
-    margin-top: auto;
+    margin-top: 10px;
 
     width: 100%;
 
     display: grid;
-
-    grid-template-columns:
-      1fr
-      1fr
-      1fr
-      1.7fr;
-
-    align-items: center;
+    grid-template-columns: 1fr;
 
     gap: 7px;
 
-    padding: 8px 0 10px;
-
-    background: var(--bg);
-
-    overflow: hidden;
+    background: transparent;
   }
 
+  /* Collapsed: only the primary CTA shows */
 
-  /* =======================================================
-     ALL BUTTONS
-     ======================================================= */
+  #promptModal #modalCopy,
+  #promptModal #modalShare {
+    display: none;
+  }
+
+  #promptModal .modal-card.is-expanded .modal-actions {
+    grid-template-columns: 1fr 1fr 1.6fr;
+  }
+
+  #promptModal .modal-card.is-expanded #modalCopy,
+  #promptModal .modal-card.is-expanded #modalShare {
+    display: flex;
+  }
 
   #promptModal .modal-actions button {
     width: 100%;
-
     height: 44px;
-    min-width: 0;
 
     display: flex;
     align-items: center;
@@ -2692,102 +2756,36 @@ transition: transform .2s ease;
 
     padding: 0 8px;
 
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
 
-    color: var(--muted);
-
-    background: rgba(255,255,255,0.045);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.07);
 
     font-family: inherit;
-
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
 
     white-space: nowrap;
 
-    overflow: hidden;
-
-    transition:
-      transform 160ms ease,
-      background 160ms ease,
-      border-color 160ms ease;
+    transition: transform 160ms ease, background 160ms ease;
   }
-
 
   #promptModal .modal-actions button:active {
-    transform: scale(0.96);
-  }
-
-
-  /* =======================================================
-     SAVE
-     ======================================================= */
-
-  #promptModal #modalSave {
-    color: var(--text);
-
-    background: rgba(255,255,255,0.045);
-  }
-
-
-  /* =======================================================
-     COPY
-     ======================================================= */
-
-  #promptModal #modalCopy {
-    color: var(--text);
-
-    background: rgba(255,255,255,0.045);
-  }
-
-
-  /* =======================================================
-     SHARE
-     ======================================================= */
-
-  #promptModal #modalShare {
-    color: var(--text);
-
-    background: rgba(255,255,255,0.045);
-  }
-
-
-  /* =======================================================
-     GENERATE IN CHATGPT
-     PRIMARY ACTION
-     ======================================================= */
-
-  #promptModal #modalGenerate {
-    color: var(--bg);
-
-    background: var(--accent-2);
-
-    border-color: var(--accent-2);
-
-    font-size: 10px;
-    font-weight: 800;
-
-    box-shadow:
-      0 6px 20px rgba(159,216,209,0.12);
-  }
-
-
-  #promptModal #modalGenerate:active {
     transform: scale(0.97);
   }
 
-
-  /* =======================================================
-     REMOVE DOWNLOAD
-     ======================================================= */
+  #promptModal #modalGenerate {
+    color: #08090b;
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    font-weight: 800;
+  }
 
   #promptModal #modalDownload {
     display: none;
   }
-
 }
-
 
 /* =========================================================
    VERY SMALL PHONES
@@ -2796,252 +2794,11 @@ transition: transform .2s ease;
 @media (max-width: 380px) {
 
   #promptModal .modal-content {
-    padding: 10px 8px;
-  }
-
-  #promptModal .modal-actions {
-    gap: 5px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
   #promptModal .modal-actions button {
     height: 40px;
-
-    padding: 0 4px;
-
-    font-size: 8px;
-  }
-
-}
-@media (max-width: 768px) {
-
-  #promptModal {
-    position: fixed;
-    inset: 0;
-
-    width: 100vw;
-    height: 100dvh;
-
-    overflow: hidden;
-
-    background: var(--bg);
-  }
-
-  #promptModal .modal-card {
-    width: 100%;
-    height: 100dvh;
-
-    display: flex;
-    flex-direction: column;
-
-    margin: 0;
-
-    overflow: hidden;
-
-    background: var(--bg);
-  }
-
-
-  /* =========================================
-     IMAGE = 80% OF SCREEN
-     ========================================= */
-
-  #promptModal .modal-image {
-    width: 100%;
-    height: 70dvh;
-    flex: 0 0 70dvh;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    overflow: hidden;
-
-    background: #000;
-  }
-
-
-  #promptModal #modalImage {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    /*
-      Complete image visible.
-      No cropping.
-      Image automatically becomes as large
-      as possible inside the 80% area.
-    */
-    object-fit: contain;
-    object-position: center;
-  }
-
-
-  /* =========================================
-     ACTION AREA = 20% OF SCREEN
-     ========================================= */
-
-  #promptModal .modal-content {
-    width: 100%;
-    height: 30dvh;
-    flex: 0 0 30dvh;
-
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-
-    padding: 10px 14px 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-
-    background: var(--bg);
-  }
-
-
-  /* Show details, sized for the 30% area */
-
-  #promptModal .modal-kicker {
-    display: flex;
-    gap: 8px;
-    margin: 0 0 4px;
     font-size: 10px;
   }
-
-  #promptModal #modalTitle {
-    display: -webkit-box;
-    overflow: hidden;
-    margin: 0 0 4px;
-    font-size: 14px;
-    line-height: 1.3;
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-
-  #promptModal #modalCreator {
-    display: block;
-    margin: 0 0 6px;
-    color: var(--muted);
-    font-size: 11px;
-  }
-
-  #promptModal .modal-tags {
-    display: flex;
-    gap: 6px;
-    margin: 0 0 8px;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #promptModal #modalPrompt {
-    display: block;
-    max-height: 76px;
-    margin: 0 0 8px;
-    padding: 8px 10px;
-    overflow-y: auto;
-    border-radius: 10px;
-    font-size: 11px;
-    line-height: 1.5;
-  }
-
-
-  /* =========================================
-     FOUR BUTTONS — ONE LINE
-     ========================================= */
-
-  #promptModal .modal-actions {
-    flex-shrink: 0;
-    margin-top: auto;
-
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-      1fr
-      1fr
-      1fr
-      1.8fr;
-
-    gap: 8px;
-
-    padding: 8px 0 10px;
-
-    background: var(--bg);
-
-    overflow: hidden;
-  }
-
-
-  #promptModal .modal-actions button {
-    width: 100%;
-    height: 44px;
-
-    padding: 0 8px;
-
-    border-radius: 8px;
-
-    border: 1px solid var(--line);
-
-    color: var(--muted);
-
-    background: var(--surface);
-
-    font-family: inherit;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    white-space: nowrap;
-  }
-
-
-  /* =========================================
-     GENERATE = PRIMARY BUTTON
-     ========================================= */
-
-  #promptModal #modalGenerate {
-    color: #08090b;
-
-    background: var(--accent-2);
-
-    border-color: var(--accent-2);
-
-    font-weight: 800;
-  }
-
-
-  /* =========================================
-     CLOSE BUTTON
-     ========================================= */
-
-  #promptModal .modal-close {
-    position: absolute;
-
-    top: 14px;
-    left: 14px;
-
-    z-index: 20;
-
-    width: 38px;
-    height: 38px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    border: 1px solid rgba(255,255,255,0.18);
-
-    color: white;
-
-    background: rgba(0,0,0,0.55);
-
-    backdrop-filter: blur(10px);
-  }
-
 }
