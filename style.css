@@ -2038,68 +2038,52 @@ transition: transform .2s ease;
     display: none;
   }
 
-  .mobile-dock {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 80;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.2rem;
-    min-height: 4.9rem;
-    padding: 0.55rem 0.7rem calc(0.55rem + env(safe-area-inset-bottom));
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(7, 8, 10, 0.9);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.34);
+ .dock-icon {
+    position: relative;
+    width: 1.7rem;
+    height: 1.7rem;
+    display: block;
   }
-
-  .mobile-dock-item {
-    appearance: none;
-    display: grid;
-    place-items: center;
-    gap: 0.3rem;
-    min-width: 0;
-    border: 0;
-    border-radius: 1rem;
-    color: rgba(247, 247, 242, 0.72);
-    background: transparent;
-    font: 700 0.66rem/1 var(--font-body);
-    text-decoration: none;
+  .dock-home::before {
+    content: "";
+    position: absolute;
+    inset: 0.28rem 0.18rem 0.1rem;
+    border: 0.18rem solid currentColor;
+    border-top: 0;
+    border-radius: 0.28rem;
   }
-
-  .mobile-dock-item:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: 2px;
+  .dock-home::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 0.525rem);
+    top: 0.08rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    border-left: 0.18rem solid currentColor;
+    border-top: 0.18rem solid currentColor;
+    transform: rotate(45deg);
   }
-
-  .mobile-dock-item.is-active,
-  .mobile-dock-item:hover {
-    color: var(--text);
+  .dock-search::before {
+    content: "";
+    position: absolute;
+    left: 0.1rem;
+    top: 0.08rem;
+    width: 1rem;
+    height: 1rem;
+    border: 0.18rem solid currentColor;
+    border-radius: 50%;
   }
-
- .dock-search::before {
-  content: "";
-  position: absolute;
-  left: 0.17rem;   /* was 0.1rem  → now equal margin all sides */
-  top: 0.17rem;    /* was 0.08rem → now equal margin all sides */
-  width: 1rem;
-  height: 1rem;
-  border: 0.18rem solid currentColor;
-  border-radius: 50%;
-}
-.dock-search::after {
-  content: "";
-  position: absolute;
-  left: 1.014rem;  /* was 0.944rem, shifted +0.07rem to match circle move */
-  top: 1.184rem;   /* was 1.094rem, shifted +0.09rem to match circle move */
-  width: 0.5rem;
-  height: 0.16rem;
-  border-radius: 999px;
-  background: currentColor;
-  transform: rotate(45deg);
-}
+  .dock-search::after {
+    content: "";
+    position: absolute;
+    left: 0.944rem;
+    top: 1.094rem;
+    width: 0.5rem;
+    height: 0.16rem;
+    border-radius: 999px;
+    background: currentColor;
+    transform: rotate(45deg);
+  } make sure these icon have perfet symetry
 
   .dock-explore::before,
   .dock-explore::after {
