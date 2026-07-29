@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 :root {
   --bg: #08090b;
   --bg-2: #0d0f13;
@@ -14,14 +16,65 @@
   --accent-3: #d76f8d;
   --danger: #ff6f8d;
   --shadow: 0 28px 110px rgba(0, 0, 0, 0.52);
+  --shadow-soft: var(--shadow);
+  --shadow-glow-cream: 0 18px 50px -20px rgba(236, 230, 212, 0.3);
+  --shadow-glow-teal: 0 0 0 1px rgba(159, 216, 209, 0.25), 0 18px 50px -20px rgba(159, 216, 209, 0.35);
   --radius: 18px;
   --radius-lg: 28px;
-  --font-display: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
-  --font-body: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* =========================================================
+   REUSABLE UTILITIES
+   Ported from the HYDROZEN V2 design-token system so future
+   components can reach for one class instead of re-writing
+   the same blur/hover/entrance rules per element.
+   ========================================================= */
+
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--line);
+}
+
+.glass-strong {
+  background: rgba(18, 20, 26, 0.78);
+  backdrop-filter: blur(30px) saturate(170%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  border: 1px solid var(--line);
+}
+
+.hover-glow {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.hover-glow:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-cream);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 html {
