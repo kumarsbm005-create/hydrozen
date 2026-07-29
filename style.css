@@ -2515,44 +2515,8 @@ transition: transform .2s ease;
     font-size: 13px;
   }
 
-  /* ---------- Save button, floats top-right over image ----------
-     position:fixed (not absolute) so it escapes the bottom panel
-     and anchors to the actual screen corner instead. ---------- */
-
-  #promptModal #modalSave {
-    position: fixed;
-    top: calc(14px + env(safe-area-inset-top, 0px));
-    right: 14px;
-    z-index: 9999;
-
-    width: auto;
-    height: 38px;
-    min-width: 0;
-
-    padding: 0 14px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 999px;
-
-    color: #fff;
-    background: rgba(0, 0, 0, 0.45);
-
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    font-size: 11px;
-    font-weight: 800;
-  }
-
-  #promptModal #modalSave:active {
-    transform: scale(0.96);
-  }
-
   /* ---------- Frosted bottom panel ---------- */
+
 
   #promptModal .modal-content {
     position: absolute;
@@ -2677,7 +2641,7 @@ transition: transform .2s ease;
     width: 100%;
 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
 
     gap: 7px;
 
@@ -2708,6 +2672,11 @@ transition: transform .2s ease;
 
     transition: transform 160ms ease, background 160ms ease;
   }
+
+  /* Left to right: Save, Share, Copy */
+  #promptModal #modalSave  { order: 1; }
+  #promptModal #modalShare { order: 2; }
+  #promptModal #modalCopy  { order: 3; }
 
   #promptModal .modal-actions button:active {
     transform: scale(0.97);
