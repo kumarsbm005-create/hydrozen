@@ -2079,56 +2079,27 @@ transition: transform .2s ease;
     color: var(--text);
   }
 
-  .dock-icon {
-    position: relative;
-    width: 1.7rem;
-    height: 1.7rem;
-    display: block;
-  }
-
-  .dock-home::before {
-    content: "";
-    position: absolute;
-    inset: 0.28rem 0.18rem 0.1rem;
-    border: 0.18rem solid currentColor;
-    border-top: 0;
-    border-radius: 0.28rem;
-  }
-
-  .dock-home::after {
-    content: "";
-    position: absolute;
-    left: calc(50% - 0.525rem);
-    top: 0.08rem;
-    width: 1.05rem;
-    height: 1.05rem;
-    border-left: 0.18rem solid currentColor;
-    border-top: 0.18rem solid currentColor;
-    transform: rotate(45deg);
-  }
-
-  .dock-search::before {
-    content: "";
-    position: absolute;
-    left: 0.1rem;
-    top: 0.08rem;
-    width: 1rem;
-    height: 1rem;
-    border: 0.18rem solid currentColor;
-    border-radius: 50%;
-  }
-
-  .dock-search::after {
-    content: "";
-    position: absolute;
-    left: 0.944rem;
-    top: 1.094rem;
-    width: 0.5rem;
-    height: 0.16rem;
-    border-radius: 999px;
-    background: currentColor;
-    transform: rotate(45deg);
-  }
+ .dock-search::before {
+  content: "";
+  position: absolute;
+  left: 0.17rem;   /* was 0.1rem  → now equal margin all sides */
+  top: 0.17rem;    /* was 0.08rem → now equal margin all sides */
+  width: 1rem;
+  height: 1rem;
+  border: 0.18rem solid currentColor;
+  border-radius: 50%;
+}
+.dock-search::after {
+  content: "";
+  position: absolute;
+  left: 1.014rem;  /* was 0.944rem, shifted +0.07rem to match circle move */
+  top: 1.184rem;   /* was 1.094rem, shifted +0.09rem to match circle move */
+  width: 0.5rem;
+  height: 0.16rem;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
 
   .dock-explore::before,
   .dock-explore::after {
