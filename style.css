@@ -2098,7 +2098,7 @@ transition: transform .2s ease;
   .dock-home::after {
     content: "";
     position: absolute;
-    left: 0.31rem;
+    left: calc(50% - 0.525rem);
     top: 0.08rem;
     width: 1.05rem;
     height: 1.05rem;
@@ -2121,10 +2121,10 @@ transition: transform .2s ease;
   .dock-search::after {
     content: "";
     position: absolute;
-    right: 0.18rem;
-    bottom: 0.2rem;
-    width: 0.72rem;
-    height: 0.18rem;
+    left: 0.944rem;
+    top: 1.094rem;
+    width: 0.5rem;
+    height: 0.16rem;
     border-radius: 999px;
     background: currentColor;
     transform: rotate(45deg);
